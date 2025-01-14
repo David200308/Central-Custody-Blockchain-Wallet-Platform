@@ -1,4 +1,4 @@
-# Application use Cloud Infra
+# Central Custody Blockchain Wallet Platform
 
 ## Tech Stack
 
@@ -7,8 +7,7 @@
 - Database: MySQL
 - Cache Database: Redis
 - Container: Docker
-- Deployment: Frontend (Vercel) + Backend (Linux Cloud Server)
-- Email Service: Mailgun (https://www.mailgun.com/)
+- Deployment: Frontend (Vercel) + Backend (Linux Cloud Server) + AWS (with Nitro Enclaves)
 - Error Tracking: Sentry (https://sentry.io/)
 
 ## ES256 JWT Signing Key Pair Generate
