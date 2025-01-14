@@ -28,21 +28,17 @@ export class UserController {
     // Get user info
     @Get()
     async getUser(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        if (!request.cookies.token) {
+        const token = request.cookies?.token;
+        if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized',
             });
             return;
         }
 
-        const token = request.cookies.token;
-        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
-            console.log(err);
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
-                error: err
-            });
-            return;
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
@@ -178,21 +174,17 @@ export class UserController {
     // Logs
     @Get('logs')
     async getLogs(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        if (!request.cookies.token) {
+        const token = request.cookies?.token;
+        if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized',
             });
             return;
         }
 
-        const token = request.cookies.token;
-        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
-            console.log(err);
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
-                error: err
-            });
-            return;
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
@@ -216,21 +208,17 @@ export class UserController {
     // Passkey login
     @Post('request/passkey/enable')
     async requestPasskeyEnable(@Body() data: { rPasskey: boolean }, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        if (!request.cookies.token) {
+        const token = request.cookies?.token;
+        if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized',
             });
             return;
         }
 
-        const token = request.cookies.token;
-        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
-            console.log(err);
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
-                error: err
-            });
-            return;
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
         });
 
         if (typeof payload !== "object") {
@@ -293,21 +281,17 @@ export class UserController {
 
     @Post('request/passkey/enroll')
     async requestPasskeyEnroll(@Body() data: CreatePasskeyRequestBodySchema, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        if (!request.cookies.token) {
+        const token = request.cookies?.token;
+        if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized',
             });
             return;
         }
 
-        const token = request.cookies.token;
-        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
-            console.log(err);
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
-                error: err
-            });
-            return;
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
         });
 
         if (typeof payload !== "object") {
@@ -567,21 +551,17 @@ export class UserController {
 
     @Post('/logout')
     async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        if (!request.cookies.token) {
+        const token = request.cookies?.token;
+        if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized'
+                message: 'Unauthorized',
             });
             return;
         }
 
-        const token = request.cookies.token;
-        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
-            console.log(err);
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
-                error: err
-            });
-            return;
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {

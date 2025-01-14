@@ -70,9 +70,9 @@ export function generateRandom6Digits() {
     return parseInt(sixDigitNumber, 10);
 }
 
-export const rpName = (): string => { return process.env.PASSKEY_RPNAME_FILE; };
-export const rpID = (): string => { return process.env.PASSKEY_RPID_FILE; };
-export const origin = (): string => { return process.env.PASSKEY_ORIGIN_FILE; };
+export const rpName = (): string => { return process.env.PASSKEY_RPNAME; };
+export const rpID = (): string => { return process.env.PASSKEY_RPID; };
+export const origin = (): string => { return process.env.PASSKEY_ORIGIN; };
 
 // export const rpName = (): string => { return readFileSync(process.env.PASSKEY_RPNAME_FILE, 'utf8').trim(); }; 
 // export const rpID = (): string => { return readFileSync(process.env.PASSKEY_RPID_FILE, 'utf8').trim(); }; 
