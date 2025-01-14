@@ -15,18 +15,18 @@ async function bootstrap() {
   checkDBConnection();
 
   const app = await NestFactory.create(AppModule);
-  const [docsUser, docsPass] = [
-    readFileSync(process.env.DOCS_USER_FILE, 'utf8').trim(), 
-    readFileSync(process.env.DOCS_PASSWORD_FILE, 'utf8').trim()
-  ];
+  // const [docsUser, docsPass] = [
+  //   readFileSync(process.env.DOCS_USER_FILE, 'utf8').trim(), 
+  //   readFileSync(process.env.DOCS_PASSWORD_FILE, 'utf8').trim()
+  // ];
     
   app.use(
     ['/docs'],
     basicAuth({
       challenge: true,
       users: { 
-        // [process.env.DOCS_USER]: process.env.DOCS_PASSWORD
-        [docsUser]: docsPass
+        [process.env.DOCS_USER]: process.env.DOCS_PASSWORD
+        // [docsUser]: docsPass
       },
     }),
   );
