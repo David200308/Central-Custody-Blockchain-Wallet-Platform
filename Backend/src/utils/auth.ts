@@ -27,7 +27,7 @@ export const passwordVerify = async (password: string, hashedPassword: string) =
 
 export const generateToken = (payload: JwtPayload, expireFast: boolean) => {
     // use ES256 algorithm to sign payload
-    const privateKey = process.env.JWT_PRIVATE_KEY;
+    const privateKey = process.env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n');
 
     // const JWTPRKF = readFileSync(process.env.JWT_PRIVATE_KEY_FILE, 'utf8').trim();
     // const privateKey = JWTPRKF.replace(/\\n/g, '\n');
@@ -41,7 +41,7 @@ export const generateToken = (payload: JwtPayload, expireFast: boolean) => {
 };
 
 export const verifyToken = async (token: string) => {
-    const publicKey = process.env.JWT_PUBLIC_KEY;
+    const publicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n');
 
     // const JWTPUKF = readFileSync(process.env.JWT_PUBLIC_KEY_FILE, 'utf8').trim();
     // const publicKey = JWTPUKF.replace(/\\n/g, '\n');
