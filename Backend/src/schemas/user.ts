@@ -5,11 +5,10 @@ export type User = {
     email: string;
     createAt: Date;
     updateAt: Date;
-    latestLoginAt: Date;
     passkeyEnabled: boolean;
 };
 
-// loginMethod: general, qr, notification, passkey
+// loginMethod: passkey
 export type Auth = {
     auth_id: number;
     auth_uuid: string;
@@ -19,11 +18,9 @@ export type Auth = {
     loginMethod: "passkey";
     loginDeviceName: string;
     loginLocation: string;
-    notificationId?: string;
-    qrId?: string;
 };
 
-// loginMethod: general, qr, notification, passkey
+// loginMethod: passkey
 export type CreateAuthRecordSchema = {
     auth_uuid: string;
     user_id: number;

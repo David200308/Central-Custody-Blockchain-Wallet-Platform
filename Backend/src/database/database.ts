@@ -1,25 +1,20 @@
-import { PoolOptions, createPool } from 'mysql2';
+import { Pool } from 'pg';
 import { readFileSync } from 'fs';
-import 'dotenv/config'
+import 'dotenv/config';
 
-const access: PoolOptions = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    database: process.env.DB_NAME,
-    // password: process.env.DB_PASS,
-    password: readFileSync(process.env.DB_PASS_FILE, 'utf8').trim(),
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+const access = {
+    connectionString: readFileSync(process.env.DB_URL_FILE, 'utf8').trim(),
+    ssl: process.env.DB_SSL ? { rejectUnauthorized: false } : false,
 };
 
-export const connection = createPool(access);
+export const pool = new Pool(access);
 
 export const checkDBConnection = async () => {
     try {
-        const promisePool = connection.promise();
-        await promisePool.query('SELECT 1');
+        const client = await pool.connect();
+        await client.query('SELECT 1');
         console.log('Database connection established successfully.');
+        client.release();
     } catch (error) {
         console.error('Error connecting to the database:', error.message);
         throw new Error('Database connection failed');

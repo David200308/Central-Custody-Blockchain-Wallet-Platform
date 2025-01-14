@@ -1,4 +1,4 @@
-printf '' | docker secret create walletplatform_mysql_root_password -
+printf '' | docker secret create walletplatform_db_url -
 docker secret create walletplatform_jwt_private_key private_key.pem
 docker secret create walletplatform_jwt_public_key public_key.pem
 printf '' | docker secret create walletplatform_docs_user -

@@ -23,7 +23,7 @@ services:
 
   backend:
     build: .
-    # image: backend
+    # image: ghcr.io/david200308/central-custody-blockchain-wallet-platform/backend
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(\"wallet.api.skyproton.com\")"
@@ -32,10 +32,7 @@ services:
     # ports:
     #   - "3001:3001"
     environment:
-      - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASS_FILE=/run/secrets/walletplatform_mysql_root_password
-      - DB_NAME=DB
+      - DB_URL_FILE=/run/secrets/walletplatform_db_url
       - JWT_PRIVATE_KEY_FILE=/run/secrets/walletplatform_jwt_private_key
       - JWT_PUBLIC_KEY_FILE=/run/secrets/walletplatform_jwt_public_key
       - DOCS_USER_FILE=/run/secrets/walletplatform_docs_user
@@ -45,9 +42,9 @@ services:
       - PASSKEY_ORIGIN_FILE=/run/secrets/walletplatform_passkey_origin
       - AES_KEY_FILE=/run/secrets/walletplatform_aes_key
       - SENTRY_DSN_FILE=/run/secrets/walletplatform_sentry_dsn
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis:6380
     secrets:
-      - walletplatform_mysql_root_password
+      - walletplatform_db_url
       - walletplatform_jwt_private_key
       - walletplatform_jwt_public_key
       - walletplatform_docs_user
@@ -58,41 +55,18 @@ services:
       - walletplatform_aes_key
       - walletplatform_sentry_dsn
     deploy:
-      mode: replicated
-      replicas: 3
+      # mode: replicated
+      # replicas: 3
       update_config:
         order: start-first
     depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  mysql:
-    image: "mysql:latest"
-    restart: always
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/walletplatform_mysql_root_password
-      MYSQL_DATABASE: DB
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
-    secrets:
-      - walletplatform_mysql_root_password
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - redis
 
   redis:
     image: "redis:latest"
     restart: always
     ports:
-      - 6379:6379
+      - 6380:6379
     volumes:
       - redis:/data
     healthcheck:
@@ -104,13 +78,11 @@ services:
 volumes: 
   letsencrypt:
     driver: local
-  mysql_data:
-    driver: local
   redis:
     driver: local
 
 secrets:
-  walletplatform_mysql_root_password:
+  walletplatform_db_url:
     external: true
   walletplatform_jwt_private_key:
     external: true

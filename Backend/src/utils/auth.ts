@@ -2,7 +2,7 @@ import { compare, hash } from "bcryptjs";
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { Request } from 'express';
-import { connection } from "../database/database";
+import { pool } from "../database/database";
 import { randomBytes, randomInt } from 'crypto';
 import 'dotenv/config';
 import { readFileSync } from "fs";
@@ -116,31 +116,35 @@ export const intToUint8Array = (num: number): Uint8Array => {
 export const uint8ArrayToInt = (uint8Array: Uint8Array): number =>
     new DataView(uint8Array.buffer).getUint32(0);
 
-export async function mysqlAESEncrypt(data: string): Promise<string | null> {
-    // const key = process.env.AES_KEY_FILE;
+export async function postgresAESEncrypt(data: string): Promise<string | null> {
     const key = readFileSync(process.env.AES_KEY_FILE, 'utf8').trim();
-    const iv = randomBytes(16).toString('hex');
-
-    await connection.promise().query("SET block_encryption_mode = 'aes-256-cbc'");
-    const [rows]: any = await connection.promise().query(
-        "SELECT HEX(AES_ENCRYPT(?, UNHEX(?), UNHEX(?))) AS encrypted",
-        [data, key, iv]
-    );
+    const iv = randomBytes(16).toString('hex'); // Generating a random 16-byte IV
+    
+    const encryptedQuery = `
+        SELECT encode(
+            pgp_sym_encrypt($1, $2, 
+                gen_salt('aes', 256), 
+                'cipher-algo=aes256,iv=' || decode($3, 'hex')
+            ), 'hex') AS encrypted;
+    `;
+    
+    const { rows } = await pool.query(encryptedQuery, [data, key, iv]);
 
     return rows[0] ? rows[0].encrypted + ':' + iv : null;
 }
 
-export async function mysqlAESDecrypt(encryptedData: string): Promise<string | null> {
-    // const key = process.env.AES_KEY_FILE;
+export async function postgresAESDecrypt(encryptedData: string): Promise<string | null> {
     const key = readFileSync(process.env.AES_KEY_FILE, 'utf8').trim();
     const [data, iv] = encryptedData.split(':');
+    
+    const decryptedQuery = `
+        SELECT convert_from(
+            pgp_sym_decrypt(decode($1, 'hex'), $2, 'cipher-algo=aes256,iv=' || decode($3, 'hex')),
+            'UTF8'
+        ) AS decrypted;
+    `;
 
-    await connection.promise().query("SET block_encryption_mode = 'aes-256-cbc'");
-    const [rows]: any = await connection.promise().query(
-        "SELECT AES_DECRYPT(UNHEX(?), UNHEX(?), UNHEX(?)) AS decrypted",
-        [data, key, iv]
-    );
+    const { rows } = await pool.query(decryptedQuery, [data, key, iv]);
 
-    const decryptedData = rows[0] ? rows[0].decrypted : null;
-    return decryptedData ? decryptedData.toString('utf-8') : null;
+    return rows[0] ? rows[0].decrypted : null;
 }

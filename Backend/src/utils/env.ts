@@ -3,10 +3,7 @@ import 'dotenv/config';
 
 export const checkEnv = () => {
     const requiredEnvVars = [
-        { varName: 'DB_HOST' },
-        { varName: 'DB_USER' },
-        { varName: 'DB_PASS', isFile: true },
-        { varName: 'DB_NAME' },
+        { varName: 'DB_URL', isFile: true },
         { varName: 'JWT_PRIVATE_KEY', isFile: true },
         { varName: 'JWT_PUBLIC_KEY', isFile: true },
         { varName: 'DOCS_USER', isFile: true },

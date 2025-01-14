@@ -12,7 +12,6 @@ import {
     verifyToken,
     validateEmail,
     generateUuid,
-    generateRandom6Digits,
     getIPDeviiceNameLocation,
     rpName,
     rpID,
@@ -86,7 +85,7 @@ export class UserController {
     async createUser(@Body() data: SignUpSchema, @Res({ passthrough: true }) response: Response) {
         if (!data.email) {
             response.status(HttpStatus.BAD_REQUEST).json({
-                message: 'Email, password, and username is required'
+                message: 'Email is required'
             });
             return;
         }
@@ -262,9 +261,16 @@ export class UserController {
             return;
         });
 
-        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+        if (typeof payload !== "object") {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized'
+            });
+            return;
+        }
+
+        if (payload.usage !== 'registration in progress') {
+            response.status(HttpStatus.BAD_REQUEST).json({
+                message: 'Invalid token usage'
             });
             return;
         }
@@ -276,10 +282,10 @@ export class UserController {
             return;
         }
 
-        const user = await this.userService.getUserById(parseInt(payload.aud));
+        const user = await this.userService.getUserByEmailWherePasskeyDisabled(payload.email);
         if (!user) {
             response.status(HttpStatus.NOT_FOUND).json({
-                message: 'User not found'
+                message: 'User not found or passkey already enabled'
             });
             return;
         }
@@ -332,9 +338,16 @@ export class UserController {
             return;
         });
 
-        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+        if (typeof payload !== "object") {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized'
+            });
+            return;
+        }
+
+        if (payload.usage !== 'registration in progress') {
+            response.status(HttpStatus.BAD_REQUEST).json({
+                message: 'Invalid token usage'
             });
             return;
         }
@@ -346,10 +359,10 @@ export class UserController {
             return;
         }
 
-        const user = await this.userService.getUserById(parseInt(payload.aud));
+        const user = await this.userService.getUserByEmailWherePasskeyDisabled(payload.email);
         if (!user) {
             response.status(HttpStatus.NOT_FOUND).json({
-                message: 'User not found'
+                message: 'User not found or passkey already enabled'
             });
             return;
         }
