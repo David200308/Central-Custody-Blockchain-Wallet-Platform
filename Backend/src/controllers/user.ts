@@ -12,7 +12,6 @@ import {
     verifyToken,
     validateEmail,
     generateUuid,
-    getIPDeviiceNameLocation,
     rpName,
     rpID,
     origin,
@@ -47,15 +46,6 @@ export class UserController {
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized'
-            });
-            return;
-        }
-
-        // compare ipaddress, location, device to detect token hijacking
-        const { loginIpAddress, device, location } = await getIPDeviiceNameLocation(request);
-        if (payload.location !== location || payload.ipaddress !== loginIpAddress || payload.device !== device) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized'
             });
@@ -166,15 +156,6 @@ export class UserController {
             return;
         }
 
-        // compare ipaddress, location, device to detect token hijacking
-        const { loginIpAddress, device, location } = await getIPDeviiceNameLocation(request);
-        if (payload.location !== location || payload.ipaddress !== loginIpAddress || payload.device !== device) {
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized'
-            });
-            return;
-        }
-
         const user = await this.userService.getUserById(parseInt(payload.aud));
         if (!user) {
             response.status(HttpStatus.NOT_FOUND).json({
@@ -215,15 +196,6 @@ export class UserController {
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized'
-            });
-            return;
-        }
-
-        // compare ipaddress, location, device to detect token hijacking
-        const { loginIpAddress, device, location } = await getIPDeviiceNameLocation(request);
-        if (payload.location !== location || payload.ipaddress !== loginIpAddress || payload.device !== device) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized'
             });
@@ -556,15 +528,11 @@ export class UserController {
 
         await this.userService.updatePasskeyCounter(passkeyUid, authenticationInfo.newCounter);
         const authuuid = generateUuid();
-        const { loginIpAddress, device, location } = await getIPDeviiceNameLocation(request);
-
+        
         const payloadAuth = {
             aud: user.id.toString(),
             email: user.email,
-            authuuid,
-            location,
-            ipaddress: loginIpAddress,
-            device,
+            authuuid
         };
 
         const tokenAuth = generateToken(payloadAuth, false);
@@ -572,10 +540,7 @@ export class UserController {
         const createAuthRes = await this.userService.createAuthRecord({
             auth_uuid: authuuid,
             user_id: user.id,
-            ipAddress: loginIpAddress,
-            loginMethod: 'passkey',
-            loginDeviceName: device,
-            loginLocation: location
+            loginMethod: 'passkey'
         });
 
         if (!createAuthRes) {
@@ -587,7 +552,7 @@ export class UserController {
 
         const createLogResult = await this.userService.createLog({
             user_id: user.id,
-            content: `Login via passkey in ${location} use ${device}`
+            content: `Login via passkey at ISO Time: ${new Date().toISOString()}`
         });
 
         if (!createLogResult) {
@@ -630,17 +595,9 @@ export class UserController {
             return;
         }
 
-        const { loginIpAddress, device, location } = await getIPDeviiceNameLocation(request);
-        if (payload.location !== location || payload.ipaddress !== loginIpAddress || payload.device !== device) {
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized'
-            });
-            return;
-        }
-
         const result = await this.userService.createLog({
             user_id: parseInt(payload.aud),
-            content: `Logout in ${location} use ${device}`
+            content: `Logout at ISO Time: ${new Date().toISOString()}`
         });
 
         if (!result) {

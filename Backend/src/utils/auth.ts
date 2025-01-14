@@ -1,7 +1,6 @@
 import { compare, hash } from "bcryptjs";
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { Request } from 'express';
 import { pool } from "../database/database";
 import { randomBytes, randomInt } from 'crypto';
 import 'dotenv/config';
@@ -63,34 +62,12 @@ export function generateUuid() {
     return uuidv4();
 }
 
-export async function getIpLocation(ipaddress: string) {
-    const ipInfo = await fetch(`https://api.iplocation.net/?ip=${ipaddress}`);
-    const ipInfoJson = await ipInfo.json();
-    const location = ipInfoJson.country_name;
-
-    return location;
-}
-
 export function generateRandom6Digits() {
     const timestamp = Date.now();
     const randomPart = randomInt(0, 1000000);
     const combinedNumber = (timestamp + randomPart) % 1000000;
     const sixDigitNumber = combinedNumber.toString().padStart(6, '0');
     return parseInt(sixDigitNumber, 10);
-}
-
-export async function getIPDeviiceNameLocation(request: Request) {
-    let loginIpAddress = request.headers['x-client-request-ip'];
-    if (Array.isArray(loginIpAddress)) {
-        loginIpAddress = loginIpAddress[0];
-    }
-    if (loginIpAddress.includes(',')) {
-        loginIpAddress = loginIpAddress.split(',')[0].trim();
-    }
-    const device = request.headers['user-agent'];
-    const location = await getIpLocation(loginIpAddress);
-
-    return { loginIpAddress, device, location };
 }
 
 // export const rpName = (): string => { return process.env.PASSKEY_RPNAME_FILE; };

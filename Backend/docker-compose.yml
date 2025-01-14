@@ -1,29 +1,8 @@
 version: "3"
 services:
-  reverse-proxy:
-    image: traefik:v3.1
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entryPoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=admin@skyproton.com"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
-    volumes:
-      - letsencrypt:/letsencrypt
-      - "/var/run/docker.sock:/var/run/docker.sock"
-
   backend:
-    build: .
-    # image: ghcr.io/david200308/central-custody-blockchain-wallet-platform/backend
+    # build: .
+    image: ghcr.io/david200308/central-custody-blockchain-wallet-platform/backend
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(\"wallet.api.skyproton.com\")"
@@ -54,6 +33,8 @@ services:
       - walletplatform_passkey_origin
       - walletplatform_aes_key
       - walletplatform_sentry_dsn
+    networks:
+      - proxy-network
     deploy:
       # mode: replicated
       # replicas: 3
@@ -101,4 +82,8 @@ secrets:
   walletplatform_aes_key:
     external: true
   walletplatform_sentry_dsn:
+    external: true
+
+networks:
+  proxy-network:
     external: true

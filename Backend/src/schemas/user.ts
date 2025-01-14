@@ -14,20 +14,14 @@ export type Auth = {
     auth_uuid: string;
     user_id: number;
     loginAt: Date;
-    ipAddress: string;
     loginMethod: "passkey";
-    loginDeviceName: string;
-    loginLocation: string;
 };
 
 // loginMethod: passkey
 export type CreateAuthRecordSchema = {
     auth_uuid: string;
     user_id: number;
-    ipAddress: string;
     loginMethod: "passkey";
-    loginDeviceName: string;
-    loginLocation: string;
 }
 
 export type Passkey = {

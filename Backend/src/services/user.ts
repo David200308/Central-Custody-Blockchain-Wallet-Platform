@@ -1,7 +1,7 @@
 import { pool } from "../database/database";
 import { SignUpSchema, User, Logs, CreateLogSchema, CreateAuthRecordSchema, CreatePasskeySchema } from "../schemas/user";
 import { Inject, Injectable } from '@nestjs/common';
-import { base64ToUint8Array, postgresAESDecrypt, postgresAESEncrypt } from "../utils/auth";
+import { base64ToUint8Array } from "../utils/auth";
 import {
     CREATE_USER_SQL,
     ENABLE_PASSKEY_SQL,
@@ -74,27 +74,12 @@ export class UserServices {
     }
 
     createAuthRecord = async (data: CreateAuthRecordSchema) => {
-        const encryptedIp = await postgresAESEncrypt(data.ipAddress);
-        // const encryptedDeviceName = await postgresAESEncrypt(data.loginDeviceName);
-        const encryptedLocation = await postgresAESEncrypt(data.loginLocation);
-        if (encryptedIp) {
-            data.ipAddress = encryptedIp;
-        }
-        // if (encryptedDeviceName) {
-        //     data.loginDeviceName = encryptedDeviceName;
-        // }
-        if (encryptedLocation) {
-            data.loginLocation = encryptedLocation;
-        }
         const sql = CREATE_AUTH_SQL;
         const client = await pool.connect();
         const result = await client.query(sql, [
             data.auth_uuid, 
             data.user_id, 
-            data.ipAddress, 
-            data.loginMethod, 
-            data.loginDeviceName, 
-            data.loginLocation
+            data.loginMethod
         ]);
         return result;
     };

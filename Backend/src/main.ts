@@ -7,7 +7,6 @@ import * as basicAuth from 'express-basic-auth';
 import 'dotenv/config';
 import { checkDBConnection } from './database/database';
 import "./instrument";
-import { accessLogMiddleware } from './utils/accessLogMiddleware';
 import { readFileSync } from 'fs';
 
 
@@ -20,9 +19,7 @@ async function bootstrap() {
     readFileSync(process.env.DOCS_USER_FILE, 'utf8').trim(), 
     readFileSync(process.env.DOCS_PASSWORD_FILE, 'utf8').trim()
   ];
-
-  app.use(accessLogMiddleware);
-  
+    
   app.use(
     ['/docs'],
     basicAuth({
