@@ -444,129 +444,125 @@ export class UserController {
 
     @Post('login/passkey/verify')
     async loginByPasskeyVerify(@Body() data: AuthenticationResponseJSON, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
-        if (!request.cookies.token) {
+        try {
+            const token = request.cookies?.token;
+            if (!token) {
+                response.status(HttpStatus.UNAUTHORIZED).json({
+                    message: 'Unauthorized',
+                });
+                return;
+            }
+
+            const payload: JwtPayload = await verifyToken(token).catch((err) => {
+                console.error('Token verification failed:', err);
+                throw new Error('Unauthorized');
+            });
+
+            if (payload.usage !== 'passkey login verification') {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Invalid token usage'
+                });
+                return;
+            }
+
+            if (!data) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Missing body data'
+                });
+                return;
+            }
+
+            const user = await this.userService.getUserByEmail(payload.email);
+            if (!user) {
+                response.status(HttpStatus.NOT_FOUND).json({
+                    message: 'User not found'
+                });
+                return;
+            }
+
+            const passkeyUid = data.id;
+            const passkeyInfo = await this.userService.getPasskeyByPasskeyUid(passkeyUid);
+
+            if (!passkeyInfo) {
+                response.status(HttpStatus.NOT_FOUND).json({
+                    message: 'Passkey not found'
+                });
+                return;
+            }
+
+            const passkeyInfoOpts = {
+                id: passkeyInfo.credentialID,
+                publicKey: passkeyInfo.credentialPublicKey,
+                counter: passkeyInfo.counter,
+                transports: passkeyInfo.transports,
+            };
+
+            const opts: VerifyAuthenticationResponseOpts = {
+                response: data,
+                expectedChallenge: payload.passkeyOptionsChallenge,
+                expectedOrigin: origin(),
+                expectedRPID: rpID(),
+                credential: passkeyInfoOpts,
+            };
+
+            const verification: VerifiedAuthenticationResponse = await verifyAuthenticationResponse(opts);
+            const { verified, authenticationInfo } = verification;
+
+            if (!verified) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Verification failed',
+                    verified: false
+                });
+                return;
+            }
+
+            await this.userService.updatePasskeyCounter(passkeyUid, authenticationInfo.newCounter);
+            const authuuid = generateUuid();
+
+            const payloadAuth = {
+                aud: user.id.toString(),
+                email: user.email,
+                authuuid
+            };
+
+            const tokenAuth = generateToken(payloadAuth, false);
+
+            const createAuthRes = await this.userService.createAuthRecord({
+                auth_uuid: authuuid,
+                user_id: user.id,
+                loginMethod: 'passkey'
+            });
+
+            if (!createAuthRes) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Create Auth Record failed'
+                });
+                return;
+            }
+
+            const createLogResult = await this.userService.createLog({
+                user_id: user.id,
+                content: `Login via passkey at ISO Time: ${new Date().toISOString()}`
+            });
+
+            if (!createLogResult) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Create log failed'
+                });
+                return;
+            }
+
+            response.cookie('token', tokenAuth, { secure: true, httpOnly: true, sameSite: 'strict' });
+            response.status(HttpStatus.OK).json({
+                message: 'Login successful',
+                verified: true
+            });
+        } catch (error) {
+            console.error('Error in loginByPasskeyVerify:', error);
             response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
+                message: error.message || 'Unauthorized',
             });
-            return;
         }
-
-        const token = request.cookies.token;
-        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
-            console.log(err);
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized',
-                error: err
-            });
-            return;
-        });
-
-        if (typeof payload !== "object") {
-            response.status(HttpStatus.UNAUTHORIZED).json({
-                message: 'Unauthorized'
-            });
-            return;
-        }
-
-        if (payload.usage !== 'passkey login verification') {
-            response.status(HttpStatus.BAD_REQUEST).json({
-                message: 'Invalid token usage'
-            });
-            return;
-        }
-
-        if (!data) {
-            response.status(HttpStatus.BAD_REQUEST).json({
-                message: 'missing body data'
-            });
-            return;
-        }
-
-        const user = await this.userService.getUserByEmail(payload.email);
-        if (!user) {
-            response.status(HttpStatus.NOT_FOUND).json({
-                message: 'User not found'
-            });
-            return;
-        }
-
-        const passkeyUid = data.id;
-        const passkeyInfo = await this.userService.getPasskeyByPasskeyUid(passkeyUid);
-
-        if (!passkeyInfo) {
-            response.status(HttpStatus.NOT_FOUND).json({
-                message: 'Passkey not found'
-            });
-            return;
-        }
-
-        const passkeyInfoOpts = {
-            id: passkeyInfo.credentialID,
-            publicKey: passkeyInfo.credentialPublicKey,
-            counter: passkeyInfo.counter,
-            transports: passkeyInfo.transports,
-        }
-
-        const opts: VerifyAuthenticationResponseOpts = {
-            response: data,
-            expectedChallenge: payload.passkeyOptionsChallenge,
-            expectedOrigin: origin(),
-            expectedRPID: rpID(),
-            credential: passkeyInfoOpts,
-        };
-
-        const verification: VerifiedAuthenticationResponse = await verifyAuthenticationResponse(opts);
-        const { verified, authenticationInfo } = verification;
-
-        if (!verified) {
-            response.status(HttpStatus.BAD_REQUEST).json({
-                message: 'Verification failed',
-                verified: false
-            });
-            return;
-        }
-
-        await this.userService.updatePasskeyCounter(passkeyUid, authenticationInfo.newCounter);
-        const authuuid = generateUuid();
-        
-        const payloadAuth = {
-            aud: user.id.toString(),
-            email: user.email,
-            authuuid
-        };
-
-        const tokenAuth = generateToken(payloadAuth, false);
-
-        const createAuthRes = await this.userService.createAuthRecord({
-            auth_uuid: authuuid,
-            user_id: user.id,
-            loginMethod: 'passkey'
-        });
-
-        if (!createAuthRes) {
-            response.status(HttpStatus.BAD_REQUEST).json({
-                message: 'Create Auth Record failed'
-            });
-            return;
-        }
-
-        const createLogResult = await this.userService.createLog({
-            user_id: user.id,
-            content: `Login via passkey at ISO Time: ${new Date().toISOString()}`
-        });
-
-        if (!createLogResult) {
-            response.status(HttpStatus.BAD_REQUEST).json({
-                message: 'Create log failed'
-            });
-            return;
-        }
-
-        response.cookie('token', tokenAuth, { secure: true, httpOnly: true, sameSite: 'strict' });
-        response.status(HttpStatus.OK).json({
-            message: 'Login successful',
-            verified: true
-        });
     }
 
     @Post('/logout')

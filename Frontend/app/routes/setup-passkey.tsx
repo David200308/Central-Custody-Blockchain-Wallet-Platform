@@ -28,7 +28,7 @@ export default function SetupPasskey() {
     useEffect(() => {
         verifyToken().then((data) => {
             if (data.isValid) {
-                navigate('/dashboard');
+                navigate('/login');
             }
             if (data.usage !== "registration in progress") {
                 navigate('/signup');
