@@ -1,16 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 // eslint-disable-next-line import/no-unresolved
-import { Setup2FADialog } from "~/components/Setup2FADialog";
-import QrScanner from "qr-scanner";
 import { useNavigate } from "@remix-run/react";
 import { useQuery } from "@tanstack/react-query";
 import { SetupPasskeyDialog } from "../components/SetupPasskeyDialog";
 
 interface User {
     id: string;
-    username: string;
     email: string;
-    mfaEnabled: boolean;
     passkeyEnabled: boolean;
 }
 
@@ -19,20 +15,6 @@ interface Logs {
     "user_id": number;
     "log_time": string;
     "content": string;
-}
-
-interface Notification {
-    notification_id: number;
-    user_id: number;
-    notification_uuid: string;
-    sentNotificationDeviceName: string;
-    sentNotificationLocation: string;
-    sentNotificationAt: Date;
-    sentNotificationIp: string;
-    receiverAction: string;
-    receiverActionAt: Date;
-    authCode: string;
-    alreadyUsed: boolean;
 }
 
 async function verifyToken() {
@@ -53,30 +35,13 @@ async function verifyToken() {
     return response.json();
 }
 
-async function checkNewNotificationLogin() {
-    const response = await fetch("/api/user/login/notification");
-
-    if (!response.ok) {
-        throw new Error("Failed to fetch notification status");
-    }
-
-    return response.json();
-}
-
 export default function Dashboard() {
     const [user, setUser] = useState<User>({
         id: "",
-        username: "",
         email: "",
-        mfaEnabled: false,
         passkeyEnabled: false,
     });
-    const [MFAOpen, setMFAOpen] = useState(false);
     const [passkeyOpen, setPasskeyOpen] = useState(false);
-    const [qrScanResult, setQrScanResult] = useState<string | null>(null);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
-    const qrScannerRef = useRef<QrScanner | null>(null);
-    const [scannerOpen, setScannerOpen] = useState(false);
     const [logs, setLogs] = useState<Logs[]>([]);
 
     const navigate = useNavigate();
@@ -116,159 +81,7 @@ export default function Dashboard() {
             console.log("Failed to verify token:", error);
             navigate('/login');
         });
-        return () => {
-            stopQrScanner();
-        };
     }, []);
-
-    const startQrScanner = async () => {
-        if (!scannerOpen) {
-            setScannerOpen(true);
-            setQrScanResult(null);
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    videoRef.current.play();
-                }
-
-                qrScannerRef.current = new QrScanner(
-                    videoRef.current!,
-                    result => setQrScanResult(result.data),
-                    {
-                        onDecodeError: error => console.error("QR code scan error", error),
-                    }
-                );
-
-                qrScannerRef.current.start();
-
-            } catch (error) {
-                console.error("Camera access denied or not available:", error);
-            }
-        }
-    };
-
-    const stopQrScanner = () => {
-        if (scannerOpen) {
-            qrScannerRef.current?.stop();
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
-            }
-            setScannerOpen(false);
-        }
-    };
-
-    const checkNotificationLoginQuery = useQuery<Notification, Error>({
-        queryKey: ["notificationStatus"],
-        queryFn: checkNewNotificationLogin,
-        refetchInterval: 5000,
-        enabled: true,
-    });
-
-    if (checkNotificationLoginQuery.data && checkNotificationLoginQuery.data.notification_uuid) {
-        const action = confirm(`New login notification request from device ${checkNotificationLoginQuery.data.sentNotificationDeviceName} at ${checkNotificationLoginQuery.data.sentNotificationLocation} received. Do you want to proceed?`);
-        if (action) {
-            const authCode = prompt("Enter the auth code");
-            if (authCode) {
-                fetch("/api/user/login/notification/action", {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        action: "approved",
-                        notification_uuid: checkNotificationLoginQuery.data.notification_uuid,
-                        authCode,
-                    }),
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert("Login approved");
-                    } else {
-                        alert("Failed to approve login");
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    alert("An error occurred while approving the login.");
-                });
-            }
-        } else {
-            fetch("/api/user/login/notification/action", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    action: "rejected",
-                    notification_uuid: checkNotificationLoginQuery.data.notification_uuid,
-                }),
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Login rejected");
-                } else {
-                    alert("Failed to reject login");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while rejecting the login.");
-            });
-        }
-    }
-
-    if (qrScanResult && qrScanResult.includes(":")) {
-        const action = confirm(`Do you want to login this device?`);
-        if (action) {
-            fetch("/api/user/login/qrcode/action", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    action: "approved",
-                    qr_uuid: qrScanResult.split(":")[0],
-                    authCode: qrScanResult.split(":")[1],
-                }),
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Login approved");
-                } else {
-                    alert("Failed to approve login");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while approving the login.");
-            });
-        } else {
-            fetch("/api/user/login/qrcode/action", {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    action: "rejected",
-                    qr_uuid: qrScanResult.split(":")[0],
-                }),
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Login rejected");
-                } else {
-                    alert("Failed to reject login");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while rejecting the login.");
-            });
-        }
-    }
 
     return (
         <div className="max-w-4xl mx-auto mt-10">
@@ -277,62 +90,13 @@ export default function Dashboard() {
             <div className="mt-8 p-6 bg-white shadow rounded-lg text-black">
                 <h2 className="text-2xl font-semibold">User Information</h2>
                 <div className="mt-4">
-                    <p className="text-lg">
-                        <span className="font-medium">Username:</span> {user.username}
-                    </p>
                     <p className="text-lg mt-2">
                         <span className="font-medium">Email:</span> {user.email}
                     </p>
-
-                    <div>
-                        <button
-                            onClick={() => setMFAOpen(true)}
-                            className="mt-4 px-6 py-2 w-[40%] bg-black text-white rounded hover:bg-gray-800"
-                            disabled={user.mfaEnabled}
-                        >
-                            Setup 2FA
-                        </button>
-                        <Setup2FADialog open={MFAOpen} closeDialog={() => setMFAOpen(false)} />
-                    </div>
+                    <p className="text-lg mt-2">
+                        <span className="font-medium">Polygon Wallet Address :</span> 0x00000000
+                    </p>
                     
-                    <div className="mt-2">
-                        <button
-                            onClick={() => setPasskeyOpen(true)}
-                            className="mt-4 px-6 py-2 w-[40%] bg-black text-white rounded hover:bg-gray-800"
-                            disabled={user.passkeyEnabled}
-                        >
-                            Setup Passkey
-                        </button>
-                        <SetupPasskeyDialog open={passkeyOpen} closeDialog={() => setPasskeyOpen(false)} />
-                    </div>
-
-                    <div>
-                        {scannerOpen && (
-                            <div className="mt-6">
-                                <video ref={videoRef} style={{ width: "40%", border: "1px solid black" }}>
-                                    <track kind="captions" srcLang="en" label="QR Scanner Video" />
-                                </video>
-                            </div>
-                        )}
-                        {!scannerOpen && (
-                            <button
-                                onClick={startQrScanner}
-                                className="mt-4 px-6 py-2 w-[40%] bg-black text-white rounded hover:bg-gray-800"
-                            >
-                                Login via Scan QR Code
-                            </button>
-                        )}
-                        {scannerOpen && (
-                            <button
-                                onClick={stopQrScanner}
-                                className="mt-4 px-6 py-2 w-[40%] bg-gray-100 text-black rounded hover:bg-gray-200"
-                            >
-                                Close
-                            </button>
-                        )}
-                        {/* {qrScanResult && <p className="text-lg mt-4">Scanned Data: {qrScanResult}</p>} */}
-                    </div>
-
                     <div className="mt-4">
                         <button
                             onClick={() => logout().then(() => {

@@ -1,8 +1,4 @@
 import { useEffect, useState } from "react";
-import { LockClosedIcon, QrCodeIcon, BellIcon } from "@heroicons/react/24/outline";
-import NormalLogin from "../components/NormalLogin";
-import QRCodeLogin from "../components/QRCodeLogin";
-import PushNotificationLogin from "../components/PushNotificationLogin";
 import { useNavigate } from "@remix-run/react";
 import PasskeyLogin from "../components/PasskeyLogin";
 
@@ -25,7 +21,7 @@ async function verifyToken() {
 }
 
 export default function Login() {
-  const [loginMethod, setLoginMethod] = useState("password");
+  const [loginMethod, setLoginMethod] = useState("passkey");
   const navigate = useNavigate();
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLDivElement>, method: string) => {
@@ -54,48 +50,6 @@ export default function Login() {
             className="cursor-pointer flex flex-col items-center"
             role="button"
             tabIndex={0}
-            onClick={() => setLoginMethod("password")}
-            onKeyDown={(event) => handleKeyPress(event, "password")}
-          >
-            <LockClosedIcon
-              className={`h-10 w-10 ${loginMethod === "password" ? "text-black" : "text-gray-700"
-                } hover:text-black`}
-            />
-            <span className="mt-2 text-sm text-gray-700">Password</span>
-          </div>
-
-          <div
-            className="cursor-pointer flex flex-col items-center"
-            role="button"
-            tabIndex={0}
-            onClick={() => setLoginMethod("qr")}
-            onKeyDown={(event) => handleKeyPress(event, "qr")}
-          >
-            <QrCodeIcon
-              className={`h-10 w-10 ${loginMethod === "qr" ? "text-black" : "text-gray-700"
-                } hover:text-black`}
-            />
-            <span className="mt-2 text-sm text-gray-700">QR Code</span>
-          </div>
-
-          <div
-            className="cursor-pointer flex flex-col items-center"
-            role="button"
-            tabIndex={0}
-            onClick={() => setLoginMethod("notification")}
-            onKeyDown={(event) => handleKeyPress(event, "notification")}
-          >
-            <BellIcon
-              className={`h-10 w-10 ${loginMethod === "notification" ? "text-black" : "text-gray-700"
-                } hover:text-black`}
-            />
-            <span className="mt-2 text-sm text-gray-700">Notification</span>
-          </div>
-
-          <div
-            className="cursor-pointer flex flex-col items-center"
-            role="button"
-            tabIndex={0}
             onClick={() => setLoginMethod("passkey")}
             onKeyDown={(event) => handleKeyPress(event, "passkey")}
           >
@@ -104,9 +58,6 @@ export default function Login() {
           </div>
         </div>
 
-        {loginMethod === "password" && <NormalLogin />}
-        {loginMethod === "qr" && <QRCodeLogin />}
-        {loginMethod === "notification" && <PushNotificationLogin />}
         {loginMethod === "passkey" && <PasskeyLogin />}
       </div>
     </div>

@@ -6,14 +6,10 @@ import { getRecaptchaScore } from "~/utils/getRecaptchaScore";
 
 interface InputData {
   captchaToken: string;
-  username: string;
   email: string;
-  password: string;
 }
 interface SignupData {
-  username: string;
   email: string;
-  password: string;
 }
 interface SignupResponse {
   message: string;
@@ -26,9 +22,7 @@ async function signupUser(data: InputData): Promise<SignupResponse> {
   }
 
   const bodyData: SignupData = {
-    username: data.username,
     email: data.email,
-    password: data.password
   }
   const response = await fetch(`/api/user/register`, {
     method: "POST",
@@ -80,9 +74,7 @@ export default function Signup() {
   const [needVerifyMessage, setNeedVerifyMessage] = useState<string>("");
   const [formData, setFormData] = useState<InputData>({
     captchaToken: "",
-    username: "",
     email: "",
-    password: "",
   });
 
   useEffect(() => {
@@ -101,7 +93,7 @@ export default function Signup() {
     onSuccess: (data: SignupResponse) => {
       console.log("User signed up successfully:", data);
       if (data.message === "Register successful") {
-        setNeedVerifyMessage("Please check your email to verify your account.");
+        setNeedVerifyMessage("Please enroll your passkey.");
       }
     },
     onError: (error: Error) => {
@@ -127,33 +119,12 @@ export default function Signup() {
           {captchaToken ? <input type="hidden" name="_captcha" value={captchaToken}></input> : null}
           <div>
             <input
-              type="text"
-              name="username"
-              placeholder="Name"
-              className="px-4 py-2 border rounded w-80 mb-2 bg-white text-black focus:outline-none focus:ring focus:border-blue-300"
-              value={formData.username}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <input
               type="email"
               name="email"
               placeholder="Email"
               className="px-4 py-2 border rounded w-80 mb-2 bg-white text-black focus:outline-none focus:ring focus:border-blue-300"
               value={formData.email}
               onChange={handleChange}
-            />
-          </div>
-          <div>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              className="px-4 py-2 border rounded w-80 mb-2 bg-white text-black focus:outline-none focus:ring focus:border-blue-300"
-              value={formData.password}
-              onChange={handleChange}
-              disabled={signupMutation.isPending || needVerifyMessage !== ""}
             />
           </div>
 
@@ -163,7 +134,15 @@ export default function Signup() {
           <button className="px-6 py-2 w-80 bg-black text-white rounded hover:bg-gray-800" type="submit" disabled={signupMutation.isPending}>
             Signup
           </button>
-          {needVerifyMessage && <p className="text-gray-700">{needVerifyMessage}</p>}
+          {
+            needVerifyMessage && 
+            <div>
+              <p className="text-gray-700 mt-4">{needVerifyMessage}</p>
+              <button className="px-6 py-2 w-80 bg-black text-white rounded hover:bg-gray-800" onClick={() => navigate('/setup-passkey')}>
+                Setup Passkey
+              </button>
+            </div>
+          }
         </Form>
       </div>
     </div>
