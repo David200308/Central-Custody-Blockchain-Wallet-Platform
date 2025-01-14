@@ -34,29 +34,29 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_USER=root
-      - DB_PASS_FILE=/run/secrets/mysql_root_password
+      - DB_PASS_FILE=/run/secrets/walletplatform_mysql_root_password
       - DB_NAME=DB
-      - JWT_PRIVATE_KEY_FILE=/run/secrets/jwt_private_key
-      - JWT_PUBLIC_KEY_FILE=/run/secrets/jwt_public_key
-      - DOCS_USER_FILE=/run/secrets/docs_user
-      - DOCS_PASSWORD_FILE=/run/secrets/docs_password
-      - PASSKEY_RPNAME_FILE=/run/secrets/passkey_rpname
-      - PASSKEY_RPID_FILE=/run/secrets/passkey_rpid
-      - PASSKEY_ORIGIN_FILE=/run/secrets/passkey_origin
-      - AES_KEY_FILE=/run/secrets/aes_key
-      - SENTRY_DSN_FILE=/run/secrets/sentry_dsn
+      - JWT_PRIVATE_KEY_FILE=/run/secrets/walletplatform_jwt_private_key
+      - JWT_PUBLIC_KEY_FILE=/run/secrets/walletplatform_jwt_public_key
+      - DOCS_USER_FILE=/run/secrets/walletplatform_docs_user
+      - DOCS_PASSWORD_FILE=/run/secrets/walletplatform_docs_password
+      - PASSKEY_RPNAME_FILE=/run/secrets/walletplatform_passkey_rpname
+      - PASSKEY_RPID_FILE=/run/secrets/walletplatform_passkey_rpid
+      - PASSKEY_ORIGIN_FILE=/run/secrets/walletplatform_passkey_origin
+      - AES_KEY_FILE=/run/secrets/walletplatform_aes_key
+      - SENTRY_DSN_FILE=/run/secrets/walletplatform_sentry_dsn
       - REDIS_URL=redis://redis:6379
     secrets:
-      - mysql_root_password
-      - jwt_private_key
-      - jwt_public_key
-      - docs_user
-      - docs_password
-      - passkey_rpname
-      - passkey_rpid
-      - passkey_origin
-      - aes_key
-      - sentry_dsn
+      - walletplatform_mysql_root_password
+      - walletplatform_jwt_private_key
+      - walletplatform_jwt_public_key
+      - walletplatform_docs_user
+      - walletplatform_docs_password
+      - walletplatform_passkey_rpname
+      - walletplatform_passkey_rpid
+      - walletplatform_passkey_origin
+      - walletplatform_aes_key
+      - walletplatform_sentry_dsn
     deploy:
       mode: replicated
       replicas: 3
@@ -74,14 +74,14 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/walletplatform_mysql_root_password
       MYSQL_DATABASE: DB
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
       - ./database.sql:/docker-entrypoint-initdb.d/database.sql
     secrets:
-      - mysql_root_password
+      - walletplatform_mysql_root_password
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 30s
@@ -110,23 +110,23 @@ volumes:
     driver: local
 
 secrets:
-  mysql_root_password:
+  walletplatform_mysql_root_password:
     external: true
-  jwt_private_key:
+  walletplatform_jwt_private_key:
     external: true
-  jwt_public_key:
+  walletplatform_jwt_public_key:
     external: true
-  docs_user:
+  walletplatform_docs_user:
     external: true
-  docs_password:
+  walletplatform_docs_password:
     external: true
-  passkey_rpname:
+  walletplatform_passkey_rpname:
     external: true
-  passkey_rpid:
+  walletplatform_passkey_rpid:
     external: true
-  passkey_origin:
+  walletplatform_passkey_origin:
     external: true
-  aes_key:
+  walletplatform_aes_key:
     external: true
-  sentry_dsn:
+  walletplatform_sentry_dsn:
     external: true

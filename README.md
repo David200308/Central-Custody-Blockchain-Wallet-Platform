@@ -78,9 +78,9 @@ docker-compose up -d
 ## On Local Machine
 
 cd Backend
-docker context create auth-system --docker "host=ssh://root@<SERVER_IP_ADDRESS>"
+docker context create wallet-platform --docker "host=ssh://root@<SERVER_IP_ADDRESS>"
 docker context list
-docker context use auth-system
+docker context use wallet-platform
 docker swarm init
 ./docker_secret_env.sh ## Need to fill in the secret !
 
@@ -88,19 +88,19 @@ docker swarm init
 docker pull <DOCKER_IMAGE_URL_BUILD_BY_GITHUB_ACTION>
 
 ## On Local Machine
-docker stack deploy -c docker-compose.yml auth-system-backend
+docker stack deploy -c docker-compose.yml wallet-platform-backend
 ```
 
 ## Build Backend Docker Image & Push to Cloud (On other Cloud Platforms)
 
 ```bash
 ## Build Docker Image
-docker build -t auth-system .
+docker build -t wallet-platform .
 
 ## Push to DigitalOcean
 ## Require: Docker, doctl CLI
-docker tag auth-system registry.digitalocean.com/<ACCOUNT>/auth-system
-docker push registry.digitalocean.com/<ACCOUNT>/auth-system
+docker tag wallet-platform registry.digitalocean.com/<ACCOUNT>/wallet-platform
+docker push registry.digitalocean.com/<ACCOUNT>/wallet-platform
 
 ## Push to Google Cloud
 ## Require: Docker, gcloud CLI
@@ -108,7 +108,7 @@ gcloud auth print-access-token | docker login -u oauth2accesstoken --password-st
 gcloud artifacts repositories create backend --repository-format=docker \
     --location=<LOCATION> --description="Backend Docker Image" \
     --project=<PROJECT_ID>
-docker tag auth-system <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/auth-system
-docker push <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/auth-system
+docker tag wallet-platform <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/wallet-platform
+docker push <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/wallet-platform
 
 ```

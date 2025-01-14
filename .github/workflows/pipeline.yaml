@@ -1,31 +1,31 @@
-# name: pipeline
-# on:
-#  push:
-#    branches:
-#      - "main"
+name: pipeline
+on:
+ push:
+   branches:
+     - "main"
 
-# permissions:
-#   packages: write
+permissions:
+  packages: write
 
-# jobs:
-#   build-and-push-image:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-#       - name: Log in to the Container registry
-#         uses: docker/login-action@v3
-#         with:
-#           registry: https://ghcr.io
-#           username: ${{ github.actor }}
-#           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-#       - name: Build and push Docker image
-#         uses: docker/build-push-action@v6
-#         with:
-#           context: ./Backend
-#           push: true
-#           tags: |
-#             ghcr.io/david200308/authentication-system/backend:latest
-#             ghcr.io/david200308/authentication-system/backend:${{ github.sha }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Backend
+          push: true
+          tags: |
+            ghcr.io/david200308/central-custody-blockchain-wallet-platform/backend:latest
+            ghcr.io/david200308/central-custody-blockchain-wallet-platform/backend:${{ github.sha }}
