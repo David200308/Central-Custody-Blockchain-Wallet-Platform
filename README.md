@@ -5,9 +5,11 @@
 - Frontend: Remix + React (TypeScript)
 - Backend: NestJS (TypeScript)
 - Database: PostgreSQL (Support by Supabase)
-- Cache Database: Redis
 - Container: Docker
-- Deployment: Frontend (Vercel) + Backend (Linux Cloud Server) + AWS (with Nitro Enclaves)
+- Deployment:
+  - Frontend (Vercel)
+  - Backend (Google Cloud Cloud Run) + Wallet Key Service (AWS EC2 with Nitro Enclaves)
+- CI / CD: GitHub Action
 - Error Tracking: Sentry (https://sentry.io/)
 
 ## ES256 JWT Signing Key Pair Generate
@@ -41,25 +43,6 @@ npm run build
 
 ## Build and Run
 npm run build && npm run start
-```
-
-## Backend Docker Deployment (Current Used)
-
-```bash
-## On Local Machine
-
-cd Backend
-docker context create wallet-platform --docker "host=ssh://root@<SERVER_IP_ADDRESS>"
-docker context list
-docker context use wallet-platform
-docker swarm init
-./docker_secret_env.sh ## Need to fill in the secret !
-
-## On Server
-docker pull <DOCKER_IMAGE_URL_BUILD_BY_GITHUB_ACTION>
-
-## On Local Machine
-docker stack deploy -c docker-compose.yml wallet-platform-backend
 ```
 
 ## Build Backend Docker Image & Push to Cloud (On other Cloud Platforms)
