@@ -36,3 +36,23 @@ CREATE TABLE IF NOT EXISTS logs (
     content VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS wallet (
+    wallet_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    wallet_uuid VARCHAR(255) NOT NULL,
+    wallet_address VARCHAR(255) NOT NULL,
+    createdAt TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- content_type: message, transaction
+CREATE TABLE IF NOT EXISTS signrequest (
+    signrequest_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    signrequest_uuid VARCHAR(255) NOT NULL,
+    request_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    content_type VARCHAR(255) NOT NULL,
+    request_status VARCHAR(255) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
