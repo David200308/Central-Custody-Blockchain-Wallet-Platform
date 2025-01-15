@@ -66,12 +66,8 @@ docker stack deploy -c docker-compose.yml wallet-platform-backend
 
 ```bash
 ## Build Docker Image
-docker build -t wallet-platform .
-
-## Push to DigitalOcean
-## Require: Docker, doctl CLI
-docker tag wallet-platform registry.digitalocean.com/<ACCOUNT>/wallet-platform
-docker push registry.digitalocean.com/<ACCOUNT>/wallet-platform
+cd Backend
+docker buildx build --platform linux/amd64 -t wallet-platform:latest .
 
 ## Push to Google Cloud
 ## Require: Docker, gcloud CLI
@@ -79,7 +75,11 @@ gcloud auth print-access-token | docker login -u oauth2accesstoken --password-st
 gcloud artifacts repositories create backend --repository-format=docker \
     --location=<LOCATION> --description="Backend Docker Image" \
     --project=<PROJECT_ID>
-docker tag wallet-platform <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/wallet-platform
-docker push <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/wallet-platform
+docker tag wallet-platform:latest <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/wallet-platform:latest
+docker push <LOCATION>-docker.pkg.dev/<PROJECT_ID>/backend/wallet-platform:latest
 
+## Push to DigitalOcean
+## Require: Docker, doctl CLI
+docker tag wallet-platform registry.digitalocean.com/<ACCOUNT>/wallet-platform
+docker push registry.digitalocean.com/<ACCOUNT>/wallet-platform
 ```

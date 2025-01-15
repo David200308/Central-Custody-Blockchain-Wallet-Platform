@@ -21,13 +21,9 @@ import {
 import {
     CREATE_AUTH_SQL
 } from "../database/sql/user/auth";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Cache } from 'cache-manager';
 
 @Injectable()
 export class UserServices {
-    constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) { }
-
     createUser = async (data: SignUpSchema) => {
         const searchUser = await this.getUserByEmail(data.email);
         if (searchUser) {
