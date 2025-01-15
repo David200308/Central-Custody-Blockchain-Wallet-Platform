@@ -48,22 +48,15 @@ export class UserController {
             return;
         }
 
-        const data = await this.userService.getUserById(parseInt(payload.aud)).catch((err) => {
-            console.log(err);
+        const data = await this.userService.getUserById(parseInt(payload.aud, 10));
+        if (!data) {
             response.status(HttpStatus.NOT_FOUND).json({
-                message: 'User not found'
+                message: 'User not found',
             });
             return;
-        });
-        if (data && typeof data === 'object' && "password" in data) {
-            delete data.password;
-            response.status(HttpStatus.OK).json(data);
-            return;
-        };
-
-        response.status(HttpStatus.NOT_FOUND).json({
-            message: 'User not found'
-        });
+        }
+        
+        response.status(HttpStatus.OK).json(data);
     }
 
     // Password register
@@ -290,7 +283,7 @@ export class UserController {
                 return;
             }
 
-             response.status(HttpStatus.OK).json({
+            response.status(HttpStatus.OK).json({
                 message: 'Request passkey successful',
                 status: true,
                 passkeyOptions,
@@ -298,7 +291,7 @@ export class UserController {
             });
         } catch (err) {
             console.error('Error processing request:', err);
-             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Internal server error',
             });
         }
@@ -311,7 +304,7 @@ export class UserController {
             const token = request.cookies?.token;
 
             if (!token) {
-                 response.status(HttpStatus.UNAUTHORIZED).json({
+                response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized'
                 });
                 return;
@@ -407,7 +400,7 @@ export class UserController {
                 return;
             }
 
-             response.status(HttpStatus.OK).json({
+            response.status(HttpStatus.OK).json({
                 message: 'Create passkey successful',
                 verified: true,
             });
@@ -466,7 +459,7 @@ export class UserController {
             const token = request.cookies?.token;
 
             if (!token) {
-                 response.status(HttpStatus.UNAUTHORIZED).json({
+                response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized'
                 });
                 return;
@@ -479,21 +472,21 @@ export class UserController {
             } catch (err) {
                 console.error('Token verification failed:', err.message);
                 const statusCode = err.message === 'Token has expired' ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
-                 response.status(statusCode).json({
+                response.status(statusCode).json({
                     message: err.message
                 });
                 return;
             }
 
             if (payload.usage !== 'passkey login verification') {
-                 response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage'
                 });
                 return;
             }
 
             if (!data) {
-                 response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Missing body data'
                 });
                 return;
@@ -501,7 +494,7 @@ export class UserController {
 
             const user = await this.userService.getUserByEmail(payload.email);
             if (!user) {
-                 response.status(HttpStatus.NOT_FOUND).json({
+                response.status(HttpStatus.NOT_FOUND).json({
                     message: 'User not found'
                 });
                 return;
@@ -511,7 +504,7 @@ export class UserController {
             const passkeyInfo = await this.userService.getPasskeyByPasskeyUid(passkeyUid);
 
             if (!passkeyInfo) {
-                 response.status(HttpStatus.NOT_FOUND).json({
+                response.status(HttpStatus.NOT_FOUND).json({
                     message: 'Passkey not found'
                 });
                 return;
@@ -532,7 +525,7 @@ export class UserController {
 
             const verification = await verifyAuthenticationResponse(opts);
             if (!verification.verified) {
-                 response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Verification failed',
                     verified: false,
                 });
@@ -559,7 +552,7 @@ export class UserController {
             });
 
             if (!createAuthRes) {
-                 response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create Auth Record failed'
                 });
                 return;
@@ -571,20 +564,20 @@ export class UserController {
             });
 
             if (!createLogResult) {
-                 response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create log failed'
                 });
                 return;
             }
 
             response.cookie('token', tokenAuth, { secure: true, httpOnly: true, sameSite: 'strict' });
-             response.status(HttpStatus.OK).json({
+            response.status(HttpStatus.OK).json({
                 message: 'Login successful',
                 verified: true,
             });
         } catch (error) {
             console.error('Error in loginByPasskeyVerify:', error);
-             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Internal server error',
             });
         }
