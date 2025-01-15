@@ -9,6 +9,13 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
     ignore_changes = [client, client_version, template[0].containers[0].image, template[0].revision]
   }
   template {
+    vpc_access {
+      network_interfaces {
+        network = google_compute_network.vpc_network.id
+        tags    = ["backend"]
+      }
+      egress = "ALL_TRAFFIC"
+    }
     containers {
       image = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/backend/wallet-platform:latest"
       ports {
