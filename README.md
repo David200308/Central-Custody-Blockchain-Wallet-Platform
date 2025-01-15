@@ -3,14 +3,20 @@
 ## Tech Stack
 
 - Frontend: Remix + React (TypeScript)
-- Backend: NestJS (TypeScript)
+- Backend: NestJS (TypeScript) + Python 3
 - Database: PostgreSQL (Support by Supabase)
 - Container: Docker
-- Deployment:
-  - Frontend (Vercel)
-  - Backend (Google Cloud Cloud Run) + Wallet Key Service (AWS EC2 with Nitro Enclaves)
+- Cloud Providers:
+  - Amazon Web Service (AWS)
+  - Google Cloud (GCP)
+  - Vercel
 - CI / CD: GitHub Action
+- Infra as Code (IaC): Terraform
 - Error Tracking: Sentry (https://sentry.io/)
+
+## Platform Flowchart
+
+![](./img/flowchart.png)
 
 ## ES256 JWT Signing Key Pair Generate
 

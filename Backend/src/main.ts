@@ -7,8 +7,6 @@ import * as basicAuth from 'express-basic-auth';
 import 'dotenv/config';
 import { checkDBConnection } from './database/database';
 import "./instrument";
-import { readFileSync } from 'fs';
-
 
 async function bootstrap() {
   checkEnv();

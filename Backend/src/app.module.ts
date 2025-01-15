@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UserController } from './controllers/user';
+import { WalletController } from './controllers/wallet';
 import { UserServices } from './services/user';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WalletServices } from './services/wallet';
+import { ConfigModule } from '@nestjs/config';
 import { SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
@@ -11,9 +13,13 @@ import { SentryModule } from '@sentry/nestjs/setup';
       isGlobal: true,
     }),
   ],
-  controllers: [UserController],
+  controllers: [
+    UserController,
+    WalletController,
+  ],
   providers: [
     UserServices,
+    WalletServices,
   ],
 })
 export class AppModule {}
