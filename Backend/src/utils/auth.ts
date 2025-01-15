@@ -101,8 +101,9 @@ export async function postgresAESEncrypt(data: string): Promise<string | null> {
                 'cipher-algo=aes256,iv=' || decode($3, 'hex')
             ), 'hex') AS encrypted;
     `;
-    
-    const { rows } = await pool.query(encryptedQuery, [data, key, iv]);
+    const client = await pool.connect();
+    const { rows } = await client.query(encryptedQuery, [data, key, iv]);
+    client.release();
 
     return rows[0] ? rows[0].encrypted + ':' + iv : null;
 }
@@ -118,7 +119,9 @@ export async function postgresAESDecrypt(encryptedData: string): Promise<string 
         ) AS decrypted;
     `;
 
-    const { rows } = await pool.query(decryptedQuery, [data, key, iv]);
+    const client = await pool.connect();
+    const { rows } = await client.query(decryptedQuery, [data, key, iv]);
+    client.release();
 
     return rows[0] ? rows[0].decrypted : null;
 }

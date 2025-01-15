@@ -32,7 +32,7 @@ export class UserServices {
         const sql = CREATE_USER_SQL;
         const client = await pool.connect();
         const result = await client.query(sql, [data.email]);
-
+        client.release();
         return result;
     };
 
@@ -41,6 +41,7 @@ export class UserServices {
             const sql = GET_USER_BY_EMAIL_SQL;
             const client = await pool.connect();
             const result = await client.query(sql, [email]);
+            client.release();
             return result.rows[0] as User;
         } catch (error) {
             return;
@@ -52,6 +53,7 @@ export class UserServices {
             const sql = GET_USER_BY_EMAIL_PASSKEY_DISABLED_SQL;
             const client = await pool.connect();
             const result = await client.query(sql, [email]);
+            client.release();
             return result.rows[0] as User;
         } catch (error) {
             return;
@@ -63,6 +65,7 @@ export class UserServices {
             const sql = GET_USER_BY_ID_SQL;
             const client = await pool.connect();
             const result = await client.query(sql, [id]);
+            client.release();
             return result.rows[0] as User;
         } catch (error) {
             throw new Error(error);
@@ -77,6 +80,7 @@ export class UserServices {
             data.user_id, 
             data.loginMethod
         ]);
+        client.release();
         return result;
     };
 
@@ -90,6 +94,7 @@ export class UserServices {
             data.counter, 
             data.transports
         ]);
+        client.release();
         return result;
     };
 
@@ -98,6 +103,7 @@ export class UserServices {
             const sql = GET_PASSKEY_BY_PASSKEY_UID_SQL;
             const client = await pool.connect();
             const result = await client.query(sql, [passkeyUid]);
+            client.release();
             const rows = result.rows;
             if (rows.length === 0) {
                 return null;
@@ -122,6 +128,7 @@ export class UserServices {
             const sql = UPDATE_PASSKEY_COUNT_SQL;
             const client = await pool.connect();
             const result = await client.query(sql, [counter, passkeyUid]);
+            client.release();
             return result;
         } catch (error) {
             throw new Error(error);
@@ -133,6 +140,7 @@ export class UserServices {
             const sql = ENABLE_PASSKEY_SQL;
             const client = await pool.connect();
             await client.query(sql, [userId]);
+            client.release();
             return true;
         } catch (error) {
             return false;
@@ -146,6 +154,7 @@ export class UserServices {
             data.user_id, 
             data.content
         ]);
+        client.release();
         return result;
     };
 
@@ -153,6 +162,7 @@ export class UserServices {
         const sql = GET_LOGS_BY_USERID;
         const client = await pool.connect();
         const result = await client.query(sql, [userId]);
+        client.release();
         const rows = result.rows;
         if (rows.length === 0) {
             return null;
