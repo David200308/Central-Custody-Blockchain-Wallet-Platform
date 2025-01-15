@@ -27,9 +27,11 @@ export function UserLogsDialog({ open, closeDialog }: UserLogsDialogProps) {
     };
 
     useEffect(() => {
-        if (open) {
-            fetchLogs();
-        }
+        fetchLogs().then((data) => {
+            console.log("Fetched successfully!");
+        }).catch((error) => {
+            console.log("Failed to fetch logs:", error);
+        });
     }, []);
 
     return (
