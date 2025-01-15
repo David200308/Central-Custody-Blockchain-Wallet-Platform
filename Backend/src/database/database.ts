@@ -3,7 +3,6 @@ import { readFileSync } from 'fs';
 import 'dotenv/config';
 
 const access = {
-    // connectionString: readFileSync(process.env.DB_URL_FILE, 'utf8').trim(),
     connectionString: process.env.DB_URL,
     ssl: process.env.DB_SSL ? { rejectUnauthorized: false } : false,
 };

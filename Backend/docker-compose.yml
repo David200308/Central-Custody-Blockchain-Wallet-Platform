@@ -21,7 +21,6 @@ services:
       - PASSKEY_ORIGIN_FILE=/run/secrets/walletplatform_passkey_origin
       - AES_KEY_FILE=/run/secrets/walletplatform_aes_key
       - SENTRY_DSN_FILE=/run/secrets/walletplatform_sentry_dsn
-      - REDIS_URL=redis://redis:6380
     secrets:
       - walletplatform_db_url
       - walletplatform_jwt_private_key

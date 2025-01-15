@@ -13,18 +13,6 @@ export const checkEnv = () => {
         { varName: 'PASSKEY_ORIGIN', isFile: false },
         { varName: 'AES_KEY', isFile: false },
         { varName: 'SENTRY_DSN', isFile: false },
-        { varName: 'REDIS_URL', isFile: false },
-        // { varName: 'DB_URL', isFile: true },
-        // { varName: 'JWT_PRIVATE_KEY', isFile: true },
-        // { varName: 'JWT_PUBLIC_KEY', isFile: true },
-        // { varName: 'DOCS_USER', isFile: true },
-        // { varName: 'DOCS_PASSWORD', isFile: true },
-        // { varName: 'PASSKEY_RPNAME', isFile: true },
-        // { varName: 'PASSKEY_RPID', isFile: true },
-        // { varName: 'PASSKEY_ORIGIN', isFile: true },
-        // { varName: 'AES_KEY', isFile: true },
-        // { varName: 'SENTRY_DSN', isFile: true },
-        // { varName: 'REDIS_URL', isFile: false },
     ];
 
     for (const { varName, isFile } of requiredEnvVars) {

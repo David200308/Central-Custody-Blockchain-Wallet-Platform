@@ -6,7 +6,6 @@ import { readFileSync } from "fs";
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  // dsn: readFileSync(process.env.SENTRY_DSN_FILE, 'utf8').trim(),
   integrations: [
     nodeProfilingIntegration(),
   ],

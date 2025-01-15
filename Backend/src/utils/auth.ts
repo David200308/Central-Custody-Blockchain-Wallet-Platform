@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { pool } from "../database/database";
 import { randomBytes, randomInt } from 'crypto';
 import 'dotenv/config';
-import { readFileSync } from "fs";
 
 const SQLI_BLACKLIST = ["'", '"', ";", "--", "/*", "*/", "=", "%", "<", ">", "(", ")", "$", "&", "|", "^", "~", "`", "+", "[", "]", "{", "}", "\\", "/", ":", ",", "?", "_", " ", "\t", "\n", "\r", "\x00", "\x1a"];
 
@@ -29,8 +28,6 @@ export const generateToken = (payload: JwtPayload, expireFast: boolean) => {
     // use ES256 algorithm to sign payload
     const privateKey = process.env.JWT_PRIVATE_KEY.replace(/\\n/g, '\n');
 
-    // const JWTPRKF = readFileSync(process.env.JWT_PRIVATE_KEY_FILE, 'utf8').trim();
-    // const privateKey = JWTPRKF.replace(/\\n/g, '\n');
     const token = sign(payload, privateKey, {
         algorithm: "ES256",
         // expireFast true 5 minuties, false 1 hour
@@ -43,8 +40,6 @@ export const generateToken = (payload: JwtPayload, expireFast: boolean) => {
 export const verifyToken = async (token: string) => {
     const publicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n');
 
-    // const JWTPUKF = readFileSync(process.env.JWT_PUBLIC_KEY_FILE, 'utf8').trim();
-    // const publicKey = JWTPUKF.replace(/\\n/g, '\n');
     const payload = verify(token, publicKey, {
         algorithms: ["ES256"]
     });
@@ -74,10 +69,6 @@ export const rpName = (): string => { return process.env.PASSKEY_RPNAME; };
 export const rpID = (): string => { return process.env.PASSKEY_RPID; };
 export const origin = (): string => { return process.env.PASSKEY_ORIGIN; };
 
-// export const rpName = (): string => { return readFileSync(process.env.PASSKEY_RPNAME_FILE, 'utf8').trim(); }; 
-// export const rpID = (): string => { return readFileSync(process.env.PASSKEY_RPID_FILE, 'utf8').trim(); }; 
-// export const origin = (): string => { return readFileSync(process.env.PASSKEY_ORIGIN_FILE, 'utf8').trim(); }; 
-
 export const uint8ArrayToBase64 = (uint8Array: Uint8Array): string =>
     Buffer.from(uint8Array).toString('base64');
  
@@ -94,9 +85,8 @@ export const uint8ArrayToInt = (uint8Array: Uint8Array): number =>
     new DataView(uint8Array.buffer).getUint32(0);
 
 export async function postgresAESEncrypt(data: string): Promise<string | null> {
-    // const key = readFileSync(process.env.AES_KEY_FILE, 'utf8').trim();
     const key = process.env.AES_KEY;
-    const iv = randomBytes(16).toString('hex'); // Generating a random 16-byte IV
+    const iv = randomBytes(16).toString('hex');
     
     const encryptedQuery = `
         SELECT encode(
@@ -112,7 +102,6 @@ export async function postgresAESEncrypt(data: string): Promise<string | null> {
 }
 
 export async function postgresAESDecrypt(encryptedData: string): Promise<string | null> {
-    // const key = readFileSync(process.env.AES_KEY_FILE, 'utf8').trim();
     const key = process.env.AES_KEY;
     const [data, iv] = encryptedData.split(':');
     
