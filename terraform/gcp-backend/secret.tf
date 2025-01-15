@@ -1,53 +1,14 @@
-resource "google_secret_manager_secret" "db_host" {
-  secret_id = "DB_HOST"
+resource "google_secret_manager_secret" "db_url" {
+  secret_id = "DB_URL"
 
   replication {
     auto {}
   }
 }
 
-resource "google_secret_manager_secret_version" "db_host_initial" {
-  secret      = google_secret_manager_secret.db_host.id
-  secret_data = var.secret_db_host
-}
-
-resource "google_secret_manager_secret" "db_user" {
-  secret_id = "DB_USER"
-
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "db_user_initial" {
-  secret      = google_secret_manager_secret.db_user.id
-  secret_data = var.secret_db_user
-}
-
-resource "google_secret_manager_secret" "db_pass" {
-  secret_id = "DB_PASS"
-
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "db_pass_initial" {
-  secret      = google_secret_manager_secret.db_pass.id
-  secret_data = var.secret_db_pass
-}
-
-resource "google_secret_manager_secret" "db_name" {
-  secret_id = "DB_NAME"
-
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "db_name_initial" {
-  secret      = google_secret_manager_secret.db_name.id
-  secret_data = var.secret_db_name
+resource "google_secret_manager_secret_version" "db_url_initial" {
+  secret      = google_secret_manager_secret.db_url.id
+  secret_data = var.secret_db_url
 }
 
 resource "google_secret_manager_secret" "jwt_private_key" {

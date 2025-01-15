@@ -10,10 +10,7 @@ variable "gcp_svc_key" {
   description = "The path to the GCP service account key"
 }
 
-variable "secret_db_host" {}
-variable "secret_db_user" {}
-variable "secret_db_pass" {}
-variable "secret_db_name" {}
+variable "secret_db_url" {}
 variable "secret_jwt_private_key" {}
 variable "secret_jwt_public_key" {}
 variable "secret_docs_user" {}
