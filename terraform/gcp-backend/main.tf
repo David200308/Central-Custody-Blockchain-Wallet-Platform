@@ -14,7 +14,7 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
         network = google_compute_network.vpc_network.id
         tags    = ["backend"]
       }
-      egress = "ALL_TRAFFIC"
+      egress = "PRIVATE_RANGES_ONLY"
     }
     containers {
       image = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_id}/backend/wallet-platform:latest"

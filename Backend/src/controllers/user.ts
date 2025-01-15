@@ -36,9 +36,13 @@ export class UserController {
             return;
         }
 
-        const payload: JwtPayload = await verifyToken(token).catch((err) => {
-            console.error('Token verification failed:', err);
-            throw new Error('Unauthorized');
+        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
+            // console.log(err);
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+                error: err
+            });
+            return;
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
@@ -113,7 +117,7 @@ export class UserController {
 
     // token verification
     @Post('token')
-    async verifyToken(@Body() data: { type: string }, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    async verifyTokenC(@Body() data: { type: string }, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
         if (!request.cookies.token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized'
@@ -129,7 +133,7 @@ export class UserController {
         }
 
         const payload: JwtPayload | void = await verifyToken(request.cookies.token).catch((err) => {
-            console.log(err);
+            // console.log(err);
             response.status(HttpStatus.UNAUTHORIZED).json({
                 message: 'Unauthorized',
                 error: err
@@ -182,9 +186,13 @@ export class UserController {
             return;
         }
 
-        const payload: JwtPayload = await verifyToken(token).catch((err) => {
-            console.error('Token verification failed:', err);
-            throw new Error('Unauthorized');
+        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
+            // console.log(err);
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+                error: err
+            });
+            return;
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
@@ -216,9 +224,13 @@ export class UserController {
             return;
         }
 
-        const payload: JwtPayload = await verifyToken(token).catch((err) => {
-            console.error('Token verification failed:', err);
-            throw new Error('Unauthorized');
+        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
+            // console.log(err);
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+                error: err
+            });
+            return;
         });
 
         if (typeof payload !== "object") {
@@ -289,9 +301,13 @@ export class UserController {
             return;
         }
 
-        const payload: JwtPayload = await verifyToken(token).catch((err) => {
-            console.error('Token verification failed:', err);
-            throw new Error('Unauthorized');
+        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
+            // console.log(err);
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+                error: err
+            });
+            return;
         });
 
         if (typeof payload !== "object") {
@@ -437,12 +453,16 @@ export class UserController {
                 return;
             }
 
-            const payload: JwtPayload = await verifyToken(token).catch((err) => {
-                console.error('Token verification failed:', err);
-                throw new Error('Unauthorized');
+            const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
+                // console.log(err);
+                response.status(HttpStatus.UNAUTHORIZED).json({
+                    message: 'Unauthorized',
+                    error: err
+                });
+                return;
             });
 
-            if (payload.usage !== 'passkey login verification') {
+            if (!payload || payload.usage !== 'passkey login verification') {
                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage'
                 });
@@ -559,9 +579,13 @@ export class UserController {
             return;
         }
 
-        const payload: JwtPayload = await verifyToken(token).catch((err) => {
-            console.error('Token verification failed:', err);
-            throw new Error('Unauthorized');
+        const payload: JwtPayload | void = await verifyToken(token).catch((err) => {
+            // console.log(err);
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+                error: err
+            });
+            return;
         });
 
         if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
