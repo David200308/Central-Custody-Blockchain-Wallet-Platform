@@ -117,15 +117,17 @@ export class UserController {
         try {
             const token = request.cookies?.token;
             if (!token) {
-                return response.status(HttpStatus.UNAUTHORIZED).json({
+                response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized: No token provided',
                 });
+                return;
             }
 
             if (data.type !== 'token') {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid or missing request type',
                 });
+                return;
             }
 
             let payload: JwtPayload;
@@ -134,33 +136,37 @@ export class UserController {
             } catch (err) {
                 console.error('Token verification failed:', err.message);
                 const statusCode = err.message === 'Token has expired' ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
-                return response.status(statusCode).json({
+                response.status(statusCode).json({
                     message: 'Unauthorized: Invalid token',
                     error: err.message,
                 });
+                return;
             }
 
             if (typeof payload !== 'object' || typeof payload.aud !== 'string') {
-                return response.status(HttpStatus.UNAUTHORIZED).json({
+                response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized: Invalid token payload',
                 });
+                return;
             }
 
             if (payload.usage) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage',
                     usage: payload.usage,
                 });
+                return;
             }
 
             const user = await this.userService.getUserById(parseInt(payload.aud, 10));
             if (!user) {
-                return response.status(HttpStatus.NOT_FOUND).json({
+                response.status(HttpStatus.NOT_FOUND).json({
                     message: 'User not found',
                 });
+                return;
             }
 
-            return response.status(HttpStatus.OK).json({
+            response.status(HttpStatus.OK).json({
                 message: 'Token is valid',
                 isValid: true,
                 user: {
@@ -171,7 +177,7 @@ export class UserController {
             });
         } catch (error) {
             console.error('Error in verifyTokenC:', error.message);
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Internal server error',
             });
         }
@@ -219,9 +225,10 @@ export class UserController {
             const token = request.cookies?.token;
 
             if (!token) {
-                return response.status(HttpStatus.UNAUTHORIZED).json({
+                response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized'
                 });
+                return;
             }
 
             let payload: JwtPayload;
@@ -231,31 +238,35 @@ export class UserController {
             } catch (error) {
                 console.error('Token verification failed:', error.message);
                 const statusCode = error.message === 'Token has expired' ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
-                return response.status(statusCode).json({
+                response.status(statusCode).json({
                     message: error.message
                 });
+                return;
             }
 
             if (payload.usage !== 'registration in progress') {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage'
                 });
+                return;
             }
 
             if (typeof data.rPasskey !== 'boolean') {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Request passkey is required'
                 });
+                return;
             }
 
             const user = await this.userService.getUserByEmailWherePasskeyDisabled(payload.email);
 
             if (!user) {
-                return response
+                response
                     .status(HttpStatus.NOT_FOUND)
                     .json({
                         message: 'User not found or passkey already enabled'
                     });
+                return;
             }
 
             const passkeyOptions = await generateRegistrationOptions({
@@ -273,12 +284,13 @@ export class UserController {
             });
 
             if (!passkeyOptions) {
-                return response
+                response
                     .status(HttpStatus.BAD_REQUEST)
                     .json({ message: 'Request passkey failed', status: false });
+                return;
             }
 
-            return response.status(HttpStatus.OK).json({
+             response.status(HttpStatus.OK).json({
                 message: 'Request passkey successful',
                 status: true,
                 passkeyOptions,
@@ -286,7 +298,7 @@ export class UserController {
             });
         } catch (err) {
             console.error('Error processing request:', err);
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Internal server error',
             });
         }
@@ -299,9 +311,10 @@ export class UserController {
             const token = request.cookies?.token;
 
             if (!token) {
-                return response.status(HttpStatus.UNAUTHORIZED).json({
+                 response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized'
                 });
+                return;
             }
 
             let payload: JwtPayload;
@@ -311,30 +324,34 @@ export class UserController {
             } catch (error) {
                 console.error('Token verification failed:', error.message);
                 const statusCode = error.message === 'Token has expired' ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
-                return response.status(statusCode).json({
+                response.status(statusCode).json({
                     message: error.message
                 });
+                return;
             }
 
             if (payload.usage !== 'registration in progress') {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage'
                 });
+                return;
             }
 
             if (!data) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Missing body data'
                 });
+                return;
             }
 
             const user = await this.userService.getUserByEmailWherePasskeyDisabled(payload.email);
             if (!user) {
-                return response
+                response
                     .status(HttpStatus.NOT_FOUND)
                     .json({
                         message: 'User not found or passkey already enabled'
                     });
+                return;
             }
 
             const verification = await verifyRegistrationResponse({
@@ -346,10 +363,11 @@ export class UserController {
             });
 
             if (!verification.verified || !verification.registrationInfo) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Verification failed',
                     verified: false,
                 });
+                return;
             }
 
             const { credential } = verification.registrationInfo;
@@ -363,16 +381,18 @@ export class UserController {
 
             const passkeyCreated = await this.userService.createPasskey(createPasskeyData);
             if (!passkeyCreated) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create passkey failed'
                 });
+                return;
             }
 
             const passkeyEnabled = await this.userService.enablePasskey(user.id);
             if (!passkeyEnabled) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Enable passkey failed'
                 });
+                return;
             }
 
             const logCreated = await this.userService.createLog({
@@ -381,18 +401,19 @@ export class UserController {
             });
 
             if (!logCreated) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create log failed'
                 });
+                return;
             }
 
-            return response.status(HttpStatus.OK).json({
+             response.status(HttpStatus.OK).json({
                 message: 'Create passkey successful',
                 verified: true,
             });
         } catch (err) {
             console.error('Error processing request:', err);
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Internal server error',
             });
         }
@@ -445,9 +466,10 @@ export class UserController {
             const token = request.cookies?.token;
 
             if (!token) {
-                return response.status(HttpStatus.UNAUTHORIZED).json({
+                 response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized'
                 });
+                return;
             }
 
             let payload: JwtPayload;
@@ -457,37 +479,42 @@ export class UserController {
             } catch (err) {
                 console.error('Token verification failed:', err.message);
                 const statusCode = err.message === 'Token has expired' ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
-                return response.status(statusCode).json({
+                 response.status(statusCode).json({
                     message: err.message
                 });
+                return;
             }
 
             if (payload.usage !== 'passkey login verification') {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage'
                 });
+                return;
             }
 
             if (!data) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Missing body data'
                 });
+                return;
             }
 
             const user = await this.userService.getUserByEmail(payload.email);
             if (!user) {
-                return response.status(HttpStatus.NOT_FOUND).json({
+                 response.status(HttpStatus.NOT_FOUND).json({
                     message: 'User not found'
                 });
+                return;
             }
 
             const passkeyUid = data.id;
             const passkeyInfo = await this.userService.getPasskeyByPasskeyUid(passkeyUid);
 
             if (!passkeyInfo) {
-                return response.status(HttpStatus.NOT_FOUND).json({
+                 response.status(HttpStatus.NOT_FOUND).json({
                     message: 'Passkey not found'
                 });
+                return;
             }
 
             const opts: VerifyAuthenticationResponseOpts = {
@@ -505,10 +532,11 @@ export class UserController {
 
             const verification = await verifyAuthenticationResponse(opts);
             if (!verification.verified) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Verification failed',
                     verified: false,
                 });
+                return;
             }
 
             const { authenticationInfo } = verification;
@@ -531,9 +559,10 @@ export class UserController {
             });
 
             if (!createAuthRes) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create Auth Record failed'
                 });
+                return;
             }
 
             const createLogResult = await this.userService.createLog({
@@ -542,19 +571,20 @@ export class UserController {
             });
 
             if (!createLogResult) {
-                return response.status(HttpStatus.BAD_REQUEST).json({
+                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create log failed'
                 });
+                return;
             }
 
             response.cookie('token', tokenAuth, { secure: true, httpOnly: true, sameSite: 'strict' });
-            return response.status(HttpStatus.OK).json({
+             response.status(HttpStatus.OK).json({
                 message: 'Login successful',
                 verified: true,
             });
         } catch (error) {
             console.error('Error in loginByPasskeyVerify:', error);
-            return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 message: 'Internal server error',
             });
         }
