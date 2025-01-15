@@ -1,5 +1,5 @@
 import { compare, hash } from "bcryptjs";
-import { JwtPayload, sign, verify } from 'jsonwebtoken';
+import { JwtPayload, sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { pool } from "../database/database";
 import { randomBytes, randomInt } from 'crypto';
@@ -40,12 +40,18 @@ export const generateToken = (payload: JwtPayload, expireFast: boolean) => {
 export const verifyToken = async (token: string) => {
     const publicKey = process.env.JWT_PUBLIC_KEY.replace(/\\n/g, '\n');
 
-    const payload = verify(token, publicKey, {
-        algorithms: ["ES256"]
-    });
-    if (!payload) throw new Error('Invalid token');
-    if (typeof payload === 'string') throw new Error('Invalid token');
-    return payload;
+    try {
+        const payload = verify(token, publicKey, { algorithms: ["ES256"] });
+        if (typeof payload === 'string') throw new Error('Invalid token');
+        
+        return payload;
+    } catch (error) {
+        if (error instanceof TokenExpiredError) {
+            throw new Error('Token has expired');
+        } else {
+            throw new Error('Invalid token');
+        }
+    }
 };
 
 export function validateEmail(email: string) {
