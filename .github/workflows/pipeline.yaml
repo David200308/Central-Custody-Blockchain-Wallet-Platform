@@ -26,9 +26,11 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Authenticate Docker with Google Cloud Artifact Registry
+      - name: Authenticate Docker with Google Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY_DOMAIN }}
+          echo ${{ secrets.GCP_SA_KEY }} | gcloud auth activate-service-account --key-file=-
+          gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGISTRY_URL }}
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${{ secrets.GCP_ARTIFACT_REGISTRY_URL }}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
