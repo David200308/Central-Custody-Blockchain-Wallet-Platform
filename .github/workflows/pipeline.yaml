@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - "main"
+    paths:
+      - "Backend/**"
 
 permissions:
   contents: read
@@ -20,13 +22,27 @@ jobs:
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
 
+      - name: Check for changes in Backend directory
+        id: check_changes
+        run: |
+          if git diff --quiet HEAD^ HEAD -- Backend; then
+            echo "No changes in Backend directory."
+            echo "should_run=false" >> $GITHUB_ENV
+          else
+            echo "Changes detected in Backend directory."
+            echo "should_run=true" >> $GITHUB_ENV
+          fi
+        shell: bash
+
       - name: Set up Google Cloud SDK
+        if: env.should_run == 'true'
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
 
       - name: Authenticate Docker with Google Artifact Registry
+        if: env.should_run == 'true'
         run: |
           echo "${{ secrets.GCP_SA_KEY }}" | base64 -d > /tmp/key.json
           gcloud auth activate-service-account --key-file=/tmp/key.json
@@ -35,6 +51,7 @@ jobs:
         shell: bash
 
       - name: Log in to GitHub Container Registry
+        if: env.should_run == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -42,6 +59,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
+        if: env.should_run == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./Backend

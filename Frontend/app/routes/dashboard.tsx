@@ -12,13 +12,6 @@ interface User {
     passkeyEnabled: boolean;
 }
 
-interface Logs {
-    "log_id": number;
-    "user_id": number;
-    "log_time": string;
-    "content": string;
-}
-
 async function verifyToken() {
     const response = await fetch("/api/user/token", {
         method: "POST",

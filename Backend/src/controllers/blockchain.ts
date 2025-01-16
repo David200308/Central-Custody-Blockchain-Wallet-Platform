@@ -53,12 +53,12 @@ export class BlockchainController {
                 return;
             }
 
-            const gasFee = await this.blockchainService.getChainGas(chainIdNumber);
+            const data = await this.blockchainService.getChainGas(chainIdNumber);
 
             response.status(HttpStatus.OK).json({
                 success: true,
                 chainId: chainIdNumber,
-                gasFee,
+                data,
             });
         } catch (error) {
             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({

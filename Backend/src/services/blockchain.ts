@@ -8,14 +8,19 @@ export class BlockchainServices {
 
     constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) { }
 
-    async getChainGas(chainId: number): Promise<number> {
+    async getChainGas(chainId: number): Promise<Object> {
         try {
-            const cacheKey = `gasFee_chain_${chainId}`;
-            const cachedGasFee = await this.cacheManager.get<string>(cacheKey);
+            const feePerGasCacheKey = `chain_${chainId}_fee_per_gas`;
+            const priorityFeePerGasCacheKey = `chain_${chainId}_priority_fee_per_gas`;
+            const cachedFeePerGas = await this.cacheManager.get<string>(feePerGasCacheKey);
+            const cachedPriorityFeePerGas = await this.cacheManager.get<string>(priorityFeePerGasCacheKey);
 
-            if (cachedGasFee !== undefined) {
-                this.logger.log(`Returning cached gas fee for chain ${chainId}: ${cachedGasFee}`);
-                return parseFloat(cachedGasFee);
+            if (cachedFeePerGas !== undefined && cachedPriorityFeePerGas !== undefined) {
+                this.logger.log(`Returning cached gas fee for chain ${chainId}: ${cachedFeePerGas}`);
+                return {
+                    "feePerGas": parseFloat(cachedFeePerGas),
+                    "priorityFeePerGas": parseFloat(cachedPriorityFeePerGas)
+                };
             }
 
             const apiKey = process.env.INFURA_API_KEY;
@@ -30,16 +35,21 @@ export class BlockchainServices {
             }
 
             const data = await response.json();
-            const mediumFee = parseFloat(data?.medium?.suggestedMaxFeePerGas);
+            const feePerGas = parseFloat(data?.medium?.suggestedMaxFeePerGas);
+            const priorityFeePerGas = parseFloat(data?.medium?.suggestedMaxPriorityFeePerGas);
 
-            if (isNaN(mediumFee)) {
-                throw new Error('Medium gas fee not found or invalid in API response');
+            if (isNaN(feePerGas) || isNaN(priorityFeePerGas)) {
+                throw new Error('Invalid gas fee');
             }
 
-            await this.cacheManager.set(cacheKey, mediumFee.toString(), 60 * 10);
+            await this.cacheManager.set(feePerGasCacheKey, data?.medium?.suggestedMaxFeePerGas, 60 * 10);
+            await this.cacheManager.set(priorityFeePerGasCacheKey, data?.medium?.suggestedPriorityFeePerGas, 60 * 10);
 
-            this.logger.log(`Fetched and cached medium gas fee for chain ${chainId}: ${mediumFee}`);
-            return mediumFee;
+            this.logger.log(`Cached ${chainId} Gas: ${feePerGas} Gwei (feePerGas) and ${priorityFeePerGas} Gwei (priorityFeePerGas)`);
+            return {
+                "feePerGas": feePerGas,
+                "priorityFeePerGas": priorityFeePerGas
+            };
         } catch (error) {
             this.logger.error(`Error fetching gas fee for chain ${chainId}: ${error.message}`);
             throw error;

@@ -1,5 +1,4 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 
 interface SignDialogProps {
@@ -13,19 +12,16 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
     value: '',
     to: '',
     nonce: '',
-    type: '',
-    chainId: '',
-    gas: '',
     maxFeePerGas: '',
     maxPriorityFeePerGas: '',
+    type: 2,
+    chainId: 137,
+    gas: 21000,
   });
   const [errors, setErrors] = useState({
     to: '',
     value: '',
     nonce: '',
-    type: '',
-    chainId: '',
-    gas: '',
     maxFeePerGas: '',
     maxPriorityFeePerGas: '',
   });
@@ -40,18 +36,12 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
       to: string;
       value: string;
       nonce: string;
-      type: string;
-      chainId: string;
-      gas: string;
       maxFeePerGas: string;
       maxPriorityFeePerGas: string;
     } = {
       to: '',
       value: '',
       nonce: '',
-      type: '',
-      chainId: '',
-      gas: '',
       maxFeePerGas: '',
       maxPriorityFeePerGas: '',
     };
@@ -60,17 +50,15 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
       newErrors.to = 'Invalid Polygon wallet address.';
     }
 
-    ['value', 'nonce', 'type', 'chainId', 'gas', 'maxFeePerGas', 'maxPriorityFeePerGas'].forEach(
-      (field) => {
-        const value = Number(transactionDetails[field as keyof typeof transactionDetails]);
-        if (isNaN(value) || value <= 0) {
-          newErrors[field as keyof typeof newErrors] = `${field} must be a positive number.`;
-        }
+    ['value', 'nonce', 'maxFeePerGas', 'maxPriorityFeePerGas'].forEach((field) => {
+      const value = Number(transactionDetails[field as keyof typeof transactionDetails]);
+      if (isNaN(value) || value <= 0) {
+        newErrors[field as keyof typeof newErrors] = `${field} must be a positive number.`;
       }
-    );
+    });
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.values(newErrors).every((error) => !error);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,17 +92,15 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
           <DialogTitle className="font-bold text-2xl">Sign Message / Transaction</DialogTitle>
           <div className="flex space-x-4">
             <button
-              className={`px-4 py-2 rounded ${
-                activeTab === 'message' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
-              }`}
+              className={`px-4 py-2 rounded ${activeTab === 'message' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
+                }`}
               onClick={() => handleTabChange('message')}
             >
               Message
             </button>
             <button
-              className={`px-4 py-2 rounded ${
-                activeTab === 'transaction' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
-              }`}
+              className={`px-4 py-2 rounded ${activeTab === 'transaction' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
+                }`}
               onClick={() => handleTabChange('transaction')}
             >
               Transaction
@@ -130,11 +116,9 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {Object.keys(transactionDetails).map((field) => (
+              {['to', 'value', 'nonce', 'maxFeePerGas', 'maxPriorityFeePerGas'].map((field) => (
                 <div key={field}>
-                  <label className="block text-sm font-medium text-gray-700">
-                    {field}
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">{field}</label>
                   <input
                     type={field === 'value' ? 'number' : 'text'}
                     name={field}
@@ -143,12 +127,22 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
                     className="w-full border rounded p-2 bg-white"
                   />
                   {errors[field as keyof typeof errors] && (
-                    <p className="text-red-500 text-sm">
-                      {errors[field as keyof typeof errors]}
-                    </p>
+                    <p className="text-red-500 text-sm">{errors[field as keyof typeof errors]}</p>
                   )}
                 </div>
               ))}
+
+              <div>
+                <p className="text-sm text-gray-700">
+                  <strong>Type:</strong> {transactionDetails.type}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Chain ID:</strong> {transactionDetails.chainId}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Gas:</strong> {transactionDetails.gas}
+                </p>
+              </div>
             </div>
           )}
 
