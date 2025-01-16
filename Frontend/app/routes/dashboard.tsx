@@ -5,6 +5,7 @@ import { useNavigate } from "@remix-run/react";
 import { QRCodeSVG } from "qrcode.react";
 import { UserLogsDialog } from "~/components/UserLogsDialog";
 import { SignDialog } from "~/components/SignDialog";
+import { SignReqHistoryDialog } from "~/components/SignReqHistoryDialog";
 
 interface User {
     id: string;
@@ -39,6 +40,7 @@ export default function Dashboard() {
     const [walletAddress, setWalletAddress] = useState<string>("0x00000000");
     const [userLogsOpen, setUserLogsOpen] = useState(false);
     const [signDialogOpen, setSignDialogOpen] = useState(false);
+    const [signReqHistoryOpen, setSignReqHistoryOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -96,10 +98,12 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <button
+                                onClick={() => setSignReqHistoryOpen(true)}
                                 className="mt-2 px-6 py-2 w-[60%] bg-black text-white rounded hover:bg-gray-800"
                             >
                                 Signature Requests History
                             </button>
+                            <SignReqHistoryDialog open={signReqHistoryOpen} closeDialog={() => setSignReqHistoryOpen(false)} />
                         </div>
                         <div>
                             <button

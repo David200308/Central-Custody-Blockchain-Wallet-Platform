@@ -18,7 +18,7 @@ interface GasFeeResult {
 const fetchGasFee = async (chainId: number) => {
   const logsResponse = await fetch(`/api/blockchain/gas/${chainId}`);
   if (!logsResponse.ok) {
-    throw new Error("Failed to fetch logs");
+    throw new Error("Failed to fetch gas fee");
   }
   const data = await logsResponse.json();
   return data as GasFeeResult;
