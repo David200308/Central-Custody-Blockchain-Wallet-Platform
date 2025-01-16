@@ -138,22 +138,21 @@ export class UserController {
                 return;
             }
 
-            if (typeof payload !== 'object' || typeof payload.aud !== 'string') {
-                response.clearCookie('token');
-                response.status(HttpStatus.UNAUTHORIZED).json({
-                    message: 'Unauthorized: Invalid token payload',
-                });
+            if (typeof payload !== 'object' || payload.usage || typeof payload.aud !== 'string') {
+                if (payload.usage) {
+                    response.status(HttpStatus.BAD_REQUEST).json({
+                        message: 'Invalid token usage or payload',
+                        usage: payload.usage,
+                    });
+                } else {
+                    response.clearCookie('token');
+                    response.status(HttpStatus.UNAUTHORIZED).json({
+                        message: 'Unauthorized: Invalid token payload',
+                    });
+                }
                 return;
             }
-
-            if (payload.usage) {
-                response.status(HttpStatus.BAD_REQUEST).json({
-                    message: 'Invalid token usage',
-                    usage: payload.usage,
-                });
-                return;
-            }
-
+            
             const user = await this.userService.getUserById(parseInt(payload.aud, 10));
             if (!user) {
                 response.clearCookie('token');
