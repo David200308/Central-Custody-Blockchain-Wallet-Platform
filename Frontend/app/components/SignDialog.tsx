@@ -1,10 +1,28 @@
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface SignDialogProps {
   open: boolean;
   closeDialog: () => void;
 }
+
+interface GasFeeResult {
+  success: string;
+  chainId: number;
+  data: {
+    feePerGas: number;
+    priorityFeePerGas: number;
+  }
+}
+
+const fetchGasFee = async (chainId: number) => {
+  const logsResponse = await fetch(`/api/blockchain/gas/${chainId}`);
+  if (!logsResponse.ok) {
+    throw new Error("Failed to fetch logs");
+  }
+  const data = await logsResponse.json();
+  return data as GasFeeResult;
+};
 
 export function SignDialog({ open, closeDialog }: SignDialogProps) {
   const [activeTab, setActiveTab] = useState<'message' | 'transaction'>('message');
@@ -82,6 +100,22 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
     }
     closeDialog();
   };
+
+  useEffect(() => {
+    if (activeTab === 'transaction') {
+      fetchGasFee(transactionDetails.chainId)
+        .then((data) => {
+          setTransactionDetails((prev) => ({
+            ...prev,
+            maxFeePerGas: data.data.feePerGas.toString(),
+            maxPriorityFeePerGas: data.data.priorityFeePerGas.toString(),
+          }));
+        })
+        .catch((error) => {
+          console.error('Failed to fetch gas fee:', error);
+        });
+    }
+  });
 
   return (
     <Dialog open={open} onClose={closeDialog} className="relative z-50 text-black">
