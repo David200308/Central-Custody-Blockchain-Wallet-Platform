@@ -1,5 +1,5 @@
-import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
-import { request, response, Response } from 'express';
+import { Controller, Get, HttpStatus, Query, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { BlockchainServices } from '../services/blockchain';
 import { UserServices } from '../services/user';
 import { JwtPayload } from 'jsonwebtoken';
@@ -13,7 +13,7 @@ export class BlockchainController {
     ) { }
 
     @Get('gas')
-    async getGas(@Query('chainId') chainId: string, @Res() res: Response) {
+    async getGas(@Query('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
         const token = request.cookies?.token;
         if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
@@ -45,21 +45,22 @@ export class BlockchainController {
             const chainIdNumber = parseInt(chainId, 10);
 
             if (isNaN(chainIdNumber)) {
-                return res.status(HttpStatus.BAD_REQUEST).json({
+                response.status(HttpStatus.BAD_REQUEST).json({
                     success: false,
                     message: 'Invalid chainId. Please provide a valid number.',
                 });
+                return;
             }
 
             const gasFee = await this.blockchainService.getChainGas(chainIdNumber);
 
-            return res.status(HttpStatus.OK).json({
+            response.status(HttpStatus.OK).json({
                 success: true,
                 chainId: chainIdNumber,
                 gasFee,
             });
         } catch (error) {
-            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 message: error.message || 'Failed to fetch gas fee',
             });
