@@ -110,6 +110,26 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
           }
         }
       }
+
+      env {
+        name = "SENTRY_DSN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.sentry_dsn.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "INFURA_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.infura_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
@@ -127,6 +147,8 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
     google_secret_manager_secret.passkey_rpid,
     google_secret_manager_secret.passkey_origin,
     google_secret_manager_secret.aes_key,
+    google_secret_manager_secret.sentry_dsn,
+    google_secret_manager_secret.infura_api_key
   ]
 }
 

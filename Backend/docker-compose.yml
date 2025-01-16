@@ -8,8 +8,6 @@ services:
       - "traefik.http.routers.backend.rule=Host(\"wallet.api.skyproton.com\")"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
-    # ports:
-    #   - "3001:3001"
     environment:
       - DB_URL_FILE=/run/secrets/walletplatform_db_url
       - JWT_PRIVATE_KEY_FILE=/run/secrets/walletplatform_jwt_private_key
@@ -21,6 +19,7 @@ services:
       - PASSKEY_ORIGIN_FILE=/run/secrets/walletplatform_passkey_origin
       - AES_KEY_FILE=/run/secrets/walletplatform_aes_key
       - SENTRY_DSN_FILE=/run/secrets/walletplatform_sentry_dsn
+      - INFURA_API_KEY=/run/secrets/walletplatform_infura_api_key
     secrets:
       - walletplatform_db_url
       - walletplatform_jwt_private_key
@@ -32,6 +31,7 @@ services:
       - walletplatform_passkey_origin
       - walletplatform_aes_key
       - walletplatform_sentry_dsn
+      - walletplatform_infura_api_key
     networks:
       - proxy-network
     deploy:
@@ -66,6 +66,8 @@ secrets:
   walletplatform_aes_key:
     external: true
   walletplatform_sentry_dsn:
+    external: true
+  walletplatform_infura_api_key:
     external: true
 
 networks:

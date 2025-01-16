@@ -19,3 +19,5 @@ variable "secret_passkey_rpname" {}
 variable "secret_passkey_rpid" {}
 variable "secret_passkey_origin" {}
 variable "secret_aes_key" {}
+variable "secret_sentry_dsn" {}
+variable "secret_infura_api_key" {}

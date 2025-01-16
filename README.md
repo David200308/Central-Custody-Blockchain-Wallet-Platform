@@ -5,6 +5,7 @@
 - Frontend: Remix + React (TypeScript)
 - Backend: NestJS (TypeScript) + Python 3
 - Database: PostgreSQL (Support by Supabase)
+- Cache DB: NestJS Cache DB
 - Container: Docker
 - Cloud Providers:
   - Amazon Web Service (AWS)

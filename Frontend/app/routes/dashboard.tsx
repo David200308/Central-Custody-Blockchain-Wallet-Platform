@@ -4,6 +4,7 @@ import { useNavigate } from "@remix-run/react";
 // import { useQuery } from "@tanstack/react-query";
 import { QRCodeSVG } from "qrcode.react";
 import { UserLogsDialog } from "~/components/UserLogsDialog";
+import { SignDialog } from "~/components/SignDialog";
 
 interface User {
     id: string;
@@ -44,6 +45,7 @@ export default function Dashboard() {
     });
     const [walletAddress, setWalletAddress] = useState<string>("0x00000000");
     const [userLogsOpen, setUserLogsOpen] = useState(false);
+    const [signDialogOpen, setSignDialogOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -92,10 +94,12 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <button
+                                onClick={() => setSignDialogOpen(true)}
                                 className="mt-2 px-6 py-2 w-[60%] bg-black text-white rounded hover:bg-gray-800"
                             >
                                 Sign Message / Transaction
                             </button>
+                            <SignDialog open={signDialogOpen} closeDialog={() => setSignDialogOpen(false)} />
                         </div>
                         <div>
                             <button

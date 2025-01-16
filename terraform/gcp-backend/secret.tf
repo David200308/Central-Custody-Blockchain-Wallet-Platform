@@ -114,3 +114,29 @@ resource "google_secret_manager_secret_version" "aes_key_initial" {
   secret      = google_secret_manager_secret.aes_key.id
   secret_data = var.secret_aes_key
 }
+
+resource "google_secret_manager_secret" "sentry_dsn" {
+  secret_id = "SENTRY_DSN"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "sentry_dsn_initial" {
+  secret      = google_secret_manager_secret.sentry_dsn.id
+  secret_data = var.secret_sentry_dsn
+}
+
+resource "google_secret_manager_secret" "infura_api_key" {
+  secret_id = "INFURA_API_KEY"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "infura_api_key_initial" {
+  secret      = google_secret_manager_secret.infura_api_key.id
+  secret_data = var.secret_infura_api_key
+}
