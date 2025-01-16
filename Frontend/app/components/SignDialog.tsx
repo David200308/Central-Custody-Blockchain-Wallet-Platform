@@ -115,7 +115,7 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
           console.error('Failed to fetch gas fee:', error);
         });
     }
-  });
+  }, [activeTab, transactionDetails.chainId]);
 
   return (
     <Dialog open={open} onClose={closeDialog} className="relative z-50 text-black">
