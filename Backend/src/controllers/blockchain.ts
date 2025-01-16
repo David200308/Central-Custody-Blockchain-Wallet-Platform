@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Query, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { BlockchainServices } from '../services/blockchain';
 import { UserServices } from '../services/user';
@@ -12,8 +12,8 @@ export class BlockchainController {
         private readonly userService: UserServices
     ) { }
 
-    @Get('gas')
-    async getGas(@Query('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    @Get('gas/:chainId')
+    async getGas(@Param('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
         const token = request.cookies?.token;
         if (!token) {
             response.status(HttpStatus.UNAUTHORIZED).json({
