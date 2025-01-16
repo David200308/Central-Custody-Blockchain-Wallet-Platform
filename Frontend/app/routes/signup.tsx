@@ -86,7 +86,7 @@ export default function Signup() {
     }).catch(() => {
       console.log("need to login");
     });
-  }, [navigate, handleReCaptchaVerify]);
+  }, [navigate, handleReCaptchaVerify, verifyToken]);
 
   const signupMutation = useMutation<SignupResponse, Error, InputData>({
     mutationFn: signupUser,

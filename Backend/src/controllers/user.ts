@@ -129,6 +129,8 @@ export class UserController {
             } catch (err) {
                 console.error('Token verification failed:', err.message);
                 const statusCode = err.message === 'Token has expired' ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
+
+                response.clearCookie('token');
                 response.status(statusCode).json({
                     message: 'Unauthorized: Invalid token',
                     error: err.message,
@@ -137,6 +139,7 @@ export class UserController {
             }
 
             if (typeof payload !== 'object' || typeof payload.aud !== 'string') {
+                response.clearCookie('token');
                 response.status(HttpStatus.UNAUTHORIZED).json({
                     message: 'Unauthorized: Invalid token payload',
                 });
@@ -144,6 +147,7 @@ export class UserController {
             }
 
             if (payload.usage) {
+                response.clearCookie('token');
                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage',
                     usage: payload.usage,
@@ -153,6 +157,7 @@ export class UserController {
 
             const user = await this.userService.getUserById(parseInt(payload.aud, 10));
             if (!user) {
+                response.clearCookie('token');
                 response.status(HttpStatus.NOT_FOUND).json({
                     message: 'User not found',
                 });
@@ -400,8 +405,44 @@ export class UserController {
                 return;
             }
 
+            const authuuid = generateUuid();
+            const tokenAuth = generateToken(
+                {
+                    aud: user.id.toString(),
+                    email: user.email,
+                    authuuid
+                },
+                false
+            );
+
+            const createAuthRes = await this.userService.createAuthRecord({
+                auth_uuid: authuuid,
+                user_id: user.id,
+                loginMethod: 'passkey',
+            });
+
+            if (!createAuthRes) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Create Auth Record failed'
+                });
+                return;
+            }
+
+            const createLogResult = await this.userService.createLog({
+                user_id: user.id,
+                content: `Login via passkey at ISO Time: ${new Date().toISOString()}`,
+            });
+
+            if (!createLogResult) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Create log failed'
+                });
+                return;
+            }
+
+            response.cookie('token', tokenAuth, { secure: true, httpOnly: true, sameSite: 'strict' });
             response.status(HttpStatus.OK).json({
-                message: 'Create passkey successful',
+                message: 'Create & Login successfully',
                 verified: true,
             });
         } catch (err) {

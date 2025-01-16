@@ -1,5 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import { Link, useNavigate } from "@remix-run/react";
+import { data, Link, useNavigate } from "@remix-run/react";
 import { useEffect } from "react";
 
 export const meta: MetaFunction = () => {
@@ -38,7 +38,7 @@ export default function Index() {
     }).catch(() => {
       console.log("need to login");
     });
-  });
+  }, [verifyToken, navigate]);
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
