@@ -42,8 +42,8 @@ export class BlockchainServices {
                 throw new Error('Invalid gas fee');
             }
 
-            await this.cacheManager.set(feePerGasCacheKey, feePerGas.toString(), 60 * 10);
-            await this.cacheManager.set(priorityFeePerGasCacheKey, priorityFeePerGas.toString(), 60 * 10);
+            await this.cacheManager.set(feePerGasCacheKey, feePerGas.toString(), 60 * 5000);
+            await this.cacheManager.set(priorityFeePerGasCacheKey, priorityFeePerGas.toString(), 60 * 5000);
 
             this.logger.log(`Cached ${chainId} Gas: ${feePerGas} Gwei (feePerGas) and ${priorityFeePerGas} Gwei (priorityFeePerGas)`);
             return {
