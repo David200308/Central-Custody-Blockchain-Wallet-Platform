@@ -147,7 +147,6 @@ export class UserController {
             }
 
             if (payload.usage) {
-                response.clearCookie('token');
                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Invalid token usage',
                     usage: payload.usage,

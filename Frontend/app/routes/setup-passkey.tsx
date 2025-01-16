@@ -44,7 +44,7 @@ export default function SetupPasskey() {
                 <div className="mt-2">
                     <button
                         onClick={() => setPasskeyOpen(true)}
-                        className="mt-4 px-6 py-2 w-[40%] bg-black text-white rounded hover:bg-gray-800"
+                        className="mt-4 px-6 py-2 bg-black text-white rounded hover:bg-gray-800"
                     >
                         Setup Passkey
                     </button>
