@@ -8,7 +8,7 @@ import { verifyToken } from '../utils/auth';
 @Controller('blockchain')
 export class BlockchainController {
     constructor(
-        private readonly blockchainService: BlockchainServices, 
+        private readonly blockchainService: BlockchainServices,
         private readonly userService: UserServices
     ) { }
 
@@ -42,12 +42,13 @@ export class BlockchainController {
             return;
         }
         try {
-            const chainIdNumber = parseInt(chainId, 10);
+            const chainIdNumber = Number(chainId);
 
-            if (isNaN(chainIdNumber)) {
+            if (!Number.isInteger(chainIdNumber) || chainIdNumber <= 0) {
                 response.status(HttpStatus.BAD_REQUEST).json({
                     success: false,
-                    message: 'Invalid chainId. Please provide a valid number.',
+                    message: 'Invalid chainId. Please provide a valid positive integer.',
+                    received: chainId,
                 });
                 return;
             }
