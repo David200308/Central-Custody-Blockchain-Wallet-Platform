@@ -140,3 +140,16 @@ resource "google_secret_manager_secret_version" "infura_api_key_initial" {
   secret      = google_secret_manager_secret.infura_api_key.id
   secret_data = var.secret_infura_api_key
 }
+
+resource "google_secret_manager_secret" "health_check_token" {
+  secret_id = "HEALTH_CHECK_TOKEN"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "health_check_token_initial" {
+  secret      = google_secret_manager_secret.health_check_token.id
+  secret_data = var.secret_health_check_token
+}

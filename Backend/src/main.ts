@@ -7,6 +7,18 @@ import * as basicAuth from 'express-basic-auth';
 import 'dotenv/config';
 import { checkDBConnection } from './database/database';
 import "./instrument";
+import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+
+@Injectable()
+class HealthCheckMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: Function) {
+    const token = req.headers['x-health-check-token'];
+    if (token !== process.env.HEALTH_CHECK_TOKEN) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+    next();
+  }
+}
 
 async function bootstrap() {
   checkEnv();
@@ -23,6 +35,13 @@ async function bootstrap() {
       },
     }),
   );
+
+  // health check
+  app.use('/health', new HealthCheckMiddleware().use);
+  app.use('/health', (req, res, next) => {
+    res.send('ok');
+    next();
+  });
 
   app.use(cookieParser());
   const config = new DocumentBuilder()

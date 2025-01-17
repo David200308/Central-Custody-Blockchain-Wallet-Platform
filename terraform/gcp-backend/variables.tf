@@ -21,3 +21,4 @@ variable "secret_passkey_origin" {}
 variable "secret_aes_key" {}
 variable "secret_sentry_dsn" {}
 variable "secret_infura_api_key" {}
+variable "secret_health_check_token" {}

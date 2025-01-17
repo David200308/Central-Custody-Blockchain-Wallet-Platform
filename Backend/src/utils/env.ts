@@ -14,6 +14,7 @@ export const checkEnv = () => {
         { varName: 'AES_KEY', isFile: false },
         { varName: 'SENTRY_DSN', isFile: false },
         { varName: 'INFURA_API_KEY', isFile: false },
+        { varName: 'HEALTH_CHECK_TOKEN', isFile: false },
     ];
 
     for (const { varName, isFile } of requiredEnvVars) {

@@ -130,6 +130,16 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
           }
         }
       }
+
+      env {
+        name = "HEALTH_CHECK_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.health_check_token.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
@@ -148,7 +158,8 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
     google_secret_manager_secret.passkey_origin,
     google_secret_manager_secret.aes_key,
     google_secret_manager_secret.sentry_dsn,
-    google_secret_manager_secret.infura_api_key
+    google_secret_manager_secret.infura_api_key,
+    google_secret_manager_secret.health-check-token
   ]
 }
 
