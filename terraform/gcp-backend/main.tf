@@ -21,6 +21,20 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
       ports {
         container_port = 3001
       }
+      liveness_probe {
+        http_get {
+          path = "/health"
+          port = 3001
+          http_headers {
+            name  = "x-health-check-token"
+            value = "${google_secret_manager_secret.health_check_token.secret_id}" # Example token
+          }
+        }
+        initial_delay_seconds = 0
+        period_seconds        = 3600
+        timeout_seconds       = 10
+        failure_threshold     = 3
+      }
       env {
         name = "DB_URL"
         value_source {
@@ -159,7 +173,7 @@ resource "google_cloud_run_v2_service" "backend_cloud_run" {
     google_secret_manager_secret.aes_key,
     google_secret_manager_secret.sentry_dsn,
     google_secret_manager_secret.infura_api_key,
-    google_secret_manager_secret.health-check-token
+    google_secret_manager_secret.health_check_token
   ]
 }
 
