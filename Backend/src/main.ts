@@ -2,23 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { HttpStatus } from '@nestjs/common';
 import { checkEnv } from './utils/env';
 import * as basicAuth from 'express-basic-auth';
 import 'dotenv/config';
 import { checkDBConnection } from './database/database';
 import "./instrument";
-import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-
-@Injectable()
-class HealthCheckMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: Function) {
-    const token = req.headers['x-health-check-token'];
-    if (token !== process.env.HEALTH_CHECK_TOKEN) {
-      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-    }
-    next();
-  }
-}
 
 async function bootstrap() {
   checkEnv();
@@ -37,10 +26,12 @@ async function bootstrap() {
   );
 
   // health check
-  app.use('/health', new HealthCheckMiddleware().use);
   app.use('/health', (req, res, next) => {
+    const token = req.headers['x-health-check-token'];
+    if (token !== process.env.HEALTH_CHECK_TOKEN) {
+      return res.status(HttpStatus.UNAUTHORIZED).send('Unauthorized');
+    }
     res.send('ok');
-    next();
   });
 
   app.use(cookieParser());
