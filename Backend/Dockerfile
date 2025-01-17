@@ -6,9 +6,12 @@ RUN mkdir -p /app/node_modules && chown -R node:node /app
 COPY package*.json ./
 RUN npm install
 
-COPY ./dist/* ./
+COPY . .
+RUN npm run build
 
-EXPOSE 8080
+WORKDIR /app/dist
+
+EXPOSE 3001
 
 USER node
 
