@@ -146,7 +146,7 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-4 mr-20 flex justify-center items-center">
                     {
-                        walletAddress && walletAddress === "" ? 
+                        walletAddress === "" ? 
                         <p>Loading ... </p> :
                         <QRCodeSVG
                             value={walletAddress}
