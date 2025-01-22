@@ -101,7 +101,7 @@ export default function Dashboard() {
                                 <span className="font-medium">Email:</span> {user.email}
                             </p>
                             <p className="text-lg mt-2">
-                                <span className="font-medium">Polygon Wallet Address:</span> 0x00000000
+                                <span className="font-medium">Polygon Wallet Address:</span> {walletAddress}
                             </p>
                         </div>
                         <div>
@@ -145,7 +145,14 @@ export default function Dashboard() {
                     </div>
                 </div>
                 <div className="mt-4 mr-20 flex justify-center items-center">
-                    <QRCodeSVG value={walletAddress} size={200} />
+                    {
+                        walletAddress && walletAddress === "" ? 
+                        <p>Loading ... </p> :
+                        <QRCodeSVG
+                            value={walletAddress}
+                            size={200}
+                        />
+                    }
                 </div>
             </div>
         </div>
