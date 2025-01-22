@@ -31,13 +31,25 @@ async function verifyToken() {
     return response.json();
 }
 
+async function getWalletAddress() {
+    const response = await fetch("/api/wallet", {
+        method: "GET"
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to verify token");
+    }
+
+    return response.json();
+}
+
 export default function Dashboard() {
     const [user, setUser] = useState<User>({
         id: "",
         email: "",
         passkeyEnabled: false,
     });
-    const [walletAddress, setWalletAddress] = useState<string>("0x00000000");
+    const [walletAddress, setWalletAddress] = useState<string>("");
     const [userLogsOpen, setUserLogsOpen] = useState(false);
     const [signDialogOpen, setSignDialogOpen] = useState(false);
     const [signReqHistoryOpen, setSignReqHistoryOpen] = useState(false);
@@ -64,12 +76,17 @@ export default function Dashboard() {
         verifyToken().then((data) => {
             if (data.isValid) {
                 setUser(data.user);
+                getWalletAddress().then((data) => {
+                    setWalletAddress(data.walletAddress);
+                }).catch((error) => {
+                    console.log("Failed to get wallet address:", error);
+                });
             }
         }).catch((error) => {
             console.log("Failed to verify token:", error);
             navigate('/login');
         });
-    }, []);
+    }, [verifyToken, getWalletAddress]);
 
     return (
         <div className="max-w-4xl mx-auto mt-10">
