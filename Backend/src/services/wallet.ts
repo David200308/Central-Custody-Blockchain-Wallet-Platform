@@ -1,6 +1,7 @@
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { pool } from "../database/database";
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class WalletServices {
