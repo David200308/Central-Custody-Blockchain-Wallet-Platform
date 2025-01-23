@@ -7,6 +7,7 @@
 - Database: PostgreSQL (Support by Supabase)
 - Cache DB: NestJS Cache DB
 - Container: Docker
+- On-Chain Data: Infura
 - Cloud Providers:
   - Amazon Web Service (AWS)
   - Google Cloud (GCP)

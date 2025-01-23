@@ -13,4 +13,12 @@ export class WalletServices {
         return "0x1234567890";
     };
 
+    async signMessage(userId: number, message: Object): Promise<String> {
+        return "test_signature_message";
+    }
+
+    async signTransaction(userId: number, transaction: Object): Promise<String> {
+        return "test_signature_transaction";
+    }
+
 }
