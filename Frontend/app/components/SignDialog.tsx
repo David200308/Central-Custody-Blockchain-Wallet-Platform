@@ -225,6 +225,11 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
           >
             Cancel
           </button>
+          <div>
+            <p className="text-lg mt-2">
+                <span className="font-medium">Signature:</span><br/> {signature}
+            </p>
+          </div>
         </DialogPanel>
       </div>
     </Dialog>
