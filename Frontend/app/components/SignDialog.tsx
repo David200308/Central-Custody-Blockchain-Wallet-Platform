@@ -24,8 +24,28 @@ const fetchGasFee = async (chainId: number) => {
   return data as GasFeeResult;
 };
 
+const requestSignature = async (mode: string, requestData: Object) => {
+  const response = await fetch(`/api/wallet/sign/${mode}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestData),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get registration options from server');
+  }
+
+  const res = await response.json();
+  if (!res.success && !res.signature) {
+    throw new Error('Request signature failed');
+  }
+  
+  return res.signature;
+}
+
 export function SignDialog({ open, closeDialog }: SignDialogProps) {
   const [activeTab, setActiveTab] = useState<'message' | 'transaction'>('message');
+  const [message, setMessage] = useState<string>("");
   const [transactionDetails, setTransactionDetails] = useState({
     value: '',
     to: '',
@@ -43,6 +63,7 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
     maxFeePerGas: '',
     maxPriorityFeePerGas: '',
   });
+  const [signature, setSignature] = useState<string>("");
 
   const isPolygonAddress = (address: string) => {
     const polygonRegex = /^(0x)?[0-9a-fA-F]{40}$/;
@@ -88,17 +109,21 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
     setActiveTab(tab);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (activeTab === 'transaction' && !validateFields()) {
       return;
     }
 
     if (activeTab === 'message') {
-      console.log('Sign Message');
+      console.log('Sign Message Start');
+      const messageSignature = await requestSignature(activeTab, { message: message });
+      setSignature(messageSignature);
+      
     } else {
-      console.log('Sign Transaction:', transactionDetails);
+      console.log('Sign Transaction Start:', transactionDetails);
+      const transactionSignature = await requestSignature(activeTab, transactionDetails);
+      setSignature(transactionSignature);
     }
-    closeDialog();
   };
 
   useEffect(() => {
@@ -146,7 +171,10 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
               <textarea
                 placeholder="Enter message to sign"
                 className="w-full border rounded p-2 bg-white"
-              ></textarea>
+                onChange={(event) => {
+                  setMessage(event.target.value);
+                }}
+              />
             </div>
           ) : (
             <div className="space-y-4">
@@ -188,7 +216,12 @@ export function SignDialog({ open, closeDialog }: SignDialogProps) {
           </button>
           <button
             className="px-6 py-2 w-full bg-gray-200 text-gray-700 rounded hover:bg-gray-300 mt-4"
-            onClick={closeDialog}
+            onClick={
+              () => {
+                setSignature("");
+                closeDialog();
+              }
+            }
           >
             Cancel
           </button>

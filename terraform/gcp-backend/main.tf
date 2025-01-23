@@ -1,5 +1,5 @@
 # google_cloud_run_v2_service
-# location: us-west1
+# location: us-central1
 
 resource "google_cloud_run_v2_service" "backend_cloud_run" {
   name     = "wallet-platform-backend"
