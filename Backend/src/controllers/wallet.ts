@@ -5,7 +5,7 @@ import { UserServices } from '../services/user';
 import { JwtPayload } from 'jsonwebtoken';
 import { verifyToken } from '../utils/auth';
 import { RequestSignSchema } from '../schemas/wallet';
-import { isPolygonAddress } from '../utils/wallet';
+import { isPolygonAddress } from '../utils/blockchain';
 
 @Controller("wallet")
 export class WalletController {
@@ -13,6 +13,9 @@ export class WalletController {
         private readonly walletService: WalletServices,
         private readonly userService: UserServices
     ) { }
+
+    @Post("create")
+    async createWallet(@Req() req: Request, @Res() res: Response) { }
 
     @Get()
     async getWalletAddress(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
@@ -57,8 +60,61 @@ export class WalletController {
         }
     }
 
-    @Post("create")
-    async createWallet(@Req() req: Request, @Res() res: Response) { }
+    @Get("new-transaction/nonce/:chainId/:walletAddress")
+    async getNewTransactionNonce(@Param('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+        const token = request.cookies?.token;
+        if (!token) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+            });
+            return;
+        }
+
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
+        });
+
+        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized'
+            });
+            return;
+        }
+
+        const data = await this.userService.getUserById(parseInt(payload.aud, 10));
+        if (!data) {
+            response.status(HttpStatus.NOT_FOUND).json({
+                message: 'User not found',
+            });
+            return;
+        }
+        try {
+            const chainIdNumber = Number(chainId);
+
+            if (!Number.isInteger(chainIdNumber) || chainIdNumber <= 0) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    success: false,
+                    message: 'Invalid chainId. Please provide a valid positive integer.',
+                    received: chainId,
+                });
+                return;
+            }
+            
+            const walletAddress = await this.walletService.getWalletByUserId(data.id);
+            const nonce = await this.walletService.getNewTransactionNonce(walletAddress, chainIdNumber);
+
+            response.status(HttpStatus.OK).json({
+                success: true,
+                nonce,
+            });
+        } catch (error) {
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: error.message || 'Failed to get new transaction nonce',
+            });
+        }
+    }
 
     @Post("sign/:mode")
     async createSign(@Param('mode') mode: string, @Body() bodyData: RequestSignSchema, @Req() request: Request, @Res({ passthrough: true }) response: Response) { 
@@ -158,6 +214,174 @@ export class WalletController {
             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 message: error.message || 'Failed to sign',
+            });
+        }
+    }
+
+    @Get("transactions/:chainId")
+    async getTransaction(@Param('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+        const token = request.cookies?.token;
+        if (!token) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+            });
+            return;
+        }
+
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
+        });
+
+        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized'
+            });
+            return;
+        }
+
+        const data = await this.userService.getUserById(parseInt(payload.aud, 10));
+        if (!data) {
+            response.status(HttpStatus.NOT_FOUND).json({
+                message: 'User not found',
+            });
+            return;
+        }
+        try {
+            const chainIdNumber = Number(chainId);
+
+            if (!Number.isInteger(chainIdNumber) || chainIdNumber <= 0) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    success: false,
+                    message: 'Invalid chainId. Please provide a valid positive integer.',
+                    received: chainId,
+                });
+                return;
+            }
+            
+            const walletAddress = await this.walletService.getWalletByUserId(data.id);
+            const transactions = await this.walletService.getTransactions(walletAddress, chainIdNumber);
+
+            response.status(HttpStatus.OK).json({
+                success: true,
+                transactions,
+            });
+        } catch (error) {
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: error.message || 'Failed to get transactions',
+            });
+        }
+    }
+
+    @Get("transactions/count/:chainId")
+    async getTransactionCount(@Param('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+        const token = request.cookies?.token;
+        if (!token) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+            });
+            return;
+        }
+
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
+        });
+
+        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized'
+            });
+            return;
+        }
+
+        const data = await this.userService.getUserById(parseInt(payload.aud, 10));
+        if (!data) {
+            response.status(HttpStatus.NOT_FOUND).json({
+                message: 'User not found',
+            });
+            return;
+        }
+        try {
+            const chainIdNumber = Number(chainId);
+
+            if (!Number.isInteger(chainIdNumber) || chainIdNumber <= 0) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    success: false,
+                    message: 'Invalid chainId. Please provide a valid positive integer.',
+                    received: chainId,
+                });
+                return;
+            }
+            
+            const walletAddress = await this.walletService.getWalletByUserId(data.id);
+            const transactions = await this.walletService.getTransactionsCount(walletAddress, chainIdNumber);
+
+            response.status(HttpStatus.OK).json({
+                success: true,
+                transactions,
+            });
+        } catch (error) {
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: error.message || 'Failed to get transaction count',
+            });
+        }
+    }
+
+    @Get("balance/:chainId")
+    async getWalletBalance(@Param('chainId') chainId: string, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+        const token = request.cookies?.token;
+        if (!token) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+            });
+            return;
+        }
+
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
+        });
+
+        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized'
+            });
+            return;
+        }
+
+        const data = await this.userService.getUserById(parseInt(payload.aud, 10));
+        if (!data) {
+            response.status(HttpStatus.NOT_FOUND).json({
+                message: 'User not found',
+            });
+            return;
+        }
+        try {
+            const chainIdNumber = Number(chainId);
+
+            if (!Number.isInteger(chainIdNumber) || chainIdNumber <= 0) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    success: false,
+                    message: 'Invalid chainId. Please provide a valid positive integer.',
+                    received: chainId,
+                });
+                return;
+            }
+            
+            const walletAddress = await this.walletService.getWalletByUserId(data.id);
+            const balance = await this.walletService.getWalletBalance(walletAddress, chainIdNumber);
+
+            response.status(HttpStatus.OK).json({
+                success: true,
+                balance,
+            });
+        } catch (error) {
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: error.message || 'Failed to get wallet balance',
             });
         }
     }
