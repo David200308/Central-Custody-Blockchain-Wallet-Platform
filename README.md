@@ -4,17 +4,32 @@
 
 - Frontend: Remix + React (TypeScript)
 - Backend: NestJS (TypeScript) + Python 3
-- Database: PostgreSQL (Support by Supabase)
-- Cache DB: NestJS Cache DB
+- Cache DB: NestJS Cache Manager
 - Container: Docker
-- On-Chain Data: Infura
-- Cloud Providers:
-  - Amazon Web Service (AWS)
-  - Google Cloud (GCP)
-  - Vercel
-- CI / CD: GitHub Action
-- Infra as Code (IaC): Terraform
-- Error Tracking: Sentry (https://sentry.io/)
+- Infra as Code (IaC)
+  - Terraform
+  - Bash Script
+
+- Infrastructure as a Service (IaaS)
+  - Cloud Provider
+    - Amazon Web Service (AWS)
+    - Google Cloud (GCP)
+
+- Platform as a Service (PaaS)
+  - Hosting
+    - Vercel
+
+- Backend as a Service (BaaS)
+  - Database
+    - Supabase (backed by PostgreSQL)
+
+- Blockchain Infrastructure as a Service (BIaaS)
+  - Infura.io
+- Software as a Service (SaaS)
+  - DevOps
+    - GitHub (Include the CI/CD tool - GitHub Action)
+    - Sentry (for Error Tracking)
+
 
 ## Platform Flowchart
 
