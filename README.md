@@ -5,31 +5,27 @@
 - Frontend: Remix + React (TypeScript)
 - Backend: NestJS (TypeScript) + Python 3
 - Cache DB: NestJS Cache Manager
-- Container: Docker
 - Infra as Code (IaC)
   - Terraform
   - Bash Script
-
+- Container as a Service (CaaS)
+  - Docker
 - Infrastructure as a Service (IaaS)
   - Cloud Provider
     - Amazon Web Service (AWS)
     - Google Cloud (GCP)
-
 - Platform as a Service (PaaS)
   - Hosting
     - Vercel
-
 - Backend as a Service (BaaS)
   - Database
     - Supabase (backed by PostgreSQL)
-
 - Blockchain Infrastructure as a Service (BIaaS)
   - Infura.io
 - Software as a Service (SaaS)
   - DevOps
     - GitHub (Include the CI/CD tool - GitHub Action)
     - Sentry (for Error Tracking)
-
 
 ## Platform Flowchart
 
