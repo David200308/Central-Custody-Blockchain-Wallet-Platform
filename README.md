@@ -1,9 +1,9 @@
 # Central Custody Blockchain Wallet Platform
 
-## Tech Stack
+## 1 Tech Stack
 
 - Frontend: Remix + React (TypeScript)
-- Backend: NestJS (TypeScript) + Python 3
+- Backend: NestJS (TypeScript) + GoLang + Python 3
 - Cache DB: NestJS Cache Manager
 - Infra as Code (IaC)
   - Terraform
@@ -20,6 +20,7 @@
 - Backend as a Service (BaaS)
   - Database
     - Supabase (backed by PostgreSQL)
+    - Google Cloud Firestore
 - Blockchain Infrastructure as a Service (BIaaS)
   - Infura.io
 - Software as a Service (SaaS)
@@ -27,11 +28,19 @@
     - GitHub (Include the CI/CD tool - GitHub Action)
     - Sentry (for Error Tracking)
 
-## Platform Flowchart
+## 2 Wallet Platform Architecture Diagram
+
+- Version A (Key Service in GCP - regular version)
+
+![](./img/wallet_platform.drawio.png)
+
+- Version B (Key Service use AWS Nitro Enclave)
+
+## 3 Platform Flowchart
 
 ![](./img/flowchart.png)
 
-## ES256 JWT Signing Key Pair Generate
+## 4 ES256 JWT Signing Key Pair Generate
 
 Generate the ECDSA key pairs with prime256v1 curve
 
@@ -40,13 +49,13 @@ openssl ecparam -name prime256v1 -genkey -noout -out private_key.pem
 openssl ec -in private_key.pem -pubout -out public_key.pem
 ```
 
-## Database AES Key Generate
+## 5 Database AES Key Generate
 
 ```
 head /dev/urandom | sha256sum
 ```
 
-## Running the Frontend
+## 6 Running the Frontend
 
 ```bash
 cd Frontend
@@ -64,7 +73,7 @@ npm run build
 npm run build && npm run start
 ```
 
-## Build Backend Docker Image & Push to Cloud (On other Cloud Platforms)
+## 7 Build Backend Docker Image & Push to Cloud (On other Cloud Platforms)
 
 ```bash
 ## Build Docker Image

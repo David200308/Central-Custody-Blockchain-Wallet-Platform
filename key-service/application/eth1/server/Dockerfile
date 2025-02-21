@@ -10,7 +10,7 @@ COPY ./app.py ./
 COPY requirements.txt ./
 RUN pip3 install -r /usr/src/app/requirements.txt
 
-ARG REGION_ARG=ap-east-1
+ARG REGION_ARG=us-west-1
 ENV REGION=$REGION_ARG
 
 CMD [ "python", "./app.py" ]

@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import boto3
 
 client_kms = boto3.client(
-    service_name="kms", region_name=os.getenv("REGION", "ap-east-1")
+    service_name="kms", region_name=os.getenv("REGION", "us-west-1")
 )
 
 class S(BaseHTTPRequestHandler):
