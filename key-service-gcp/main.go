@@ -39,43 +39,6 @@ type dbClientCtxKey string
 type firebaseClientCtxKey string
 type firestoreClientCtxKey string
 
-type JWTData struct {
-	Aud        string `json:"aud"`
-	Name       string `json:"name"`
-	Iat        int64  `json:"iat"`
-	AudName    string `json:"aud name"`
-	Email      string `json:"email"`
-	Image      string `json:"image"`
-	Iss        string `json:"iss"`
-	Issuer     string `json:"issuer"`
-	IssuerID   string `json:"issuer id"`
-	IssuerName string `json:"issuer name"`
-	IssueAt    int64  `json:"issue at"`
-	VC         VC     `json:"vc"`
-}
-
-type VC struct {
-	Context           []string          `json:"@context"`
-	Type              []string          `json:"type"`
-	CredentialSubject CredentialSubject `json:"credentialSubject"`
-}
-
-type CredentialSubject struct {
-	Certification Certification `json:"certification"`
-}
-
-type Certification struct {
-	Type            string `json:"type"`
-	Name            string `json:"name"`
-	OnchainContract string `json:"onchainContract"`
-	OnchainID       string `json:"onchainId"`
-}
-
-type VerifyJWTRequest struct {
-	Token     string `json:"token"`
-	PublicKey string `json:"publicKey"`
-}
-
 const keyVersionName = "projects/wallet-platform/locations/us-central1/keyRings/key-service/cryptoKeys/wallet-service/cryptoKeyVersions/1"
 
 var ctx = context.Background()
