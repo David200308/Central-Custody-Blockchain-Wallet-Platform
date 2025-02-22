@@ -37,7 +37,7 @@ const fetchGasFee = async (chainId: number): Promise<GasFeeResult> => {
 };
 
 const fetchNewNonce = async (chainId: number, walletAddress: string): Promise<number> => {
-  const response = await fetch(`/wallet/new-transaction/nonce/${chainId}/${walletAddress}`);
+  const response = await fetch(`/api/wallet/new-transaction/nonce/${chainId}/${walletAddress}`);
   if (!response.ok) {
     throw new Error("Failed to fetch new nonce");
   }
