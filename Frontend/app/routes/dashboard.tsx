@@ -37,7 +37,19 @@ async function getWalletAddress() {
     });
 
     if (!response.ok) {
-        throw new Error("Failed to verify token");
+        throw new Error("Failed to get wallet address");
+    }
+
+    return response.json();
+}
+
+async function getWalletBalance() {
+    const response = await fetch("/api/wallet/balance/137", {
+        method: "GET"
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to get wallet balance");
     }
 
     return response.json();
@@ -50,6 +62,7 @@ export default function Dashboard() {
         passkeyEnabled: false,
     });
     const [walletAddress, setWalletAddress] = useState<string>("");
+    const [balance, setBalance] = useState<number>();
     const [userLogsOpen, setUserLogsOpen] = useState(false);
     const [signDialogOpen, setSignDialogOpen] = useState(false);
     const [signReqHistoryOpen, setSignReqHistoryOpen] = useState(false);
@@ -81,12 +94,17 @@ export default function Dashboard() {
                 }).catch((error) => {
                     console.log("Failed to get wallet address:", error);
                 });
+                getWalletBalance().then((data) => {
+                    setBalance(data.balance);
+                }).catch((error) => {
+                    console.log("Failed to get wallet balance:", error);
+                });
             }
         }).catch((error) => {
             console.log("Failed to verify token:", error);
             navigate('/login');
         });
-    }, [verifyToken, getWalletAddress]);
+    }, [verifyToken, getWalletAddress, getWalletBalance]);
 
     return (
         <div className="max-w-4xl mx-auto mt-10">
@@ -105,6 +123,9 @@ export default function Dashboard() {
                             </p>
                             <p className="text-lg mt-2">
                                 <span className="font-medium">Chain Info:</span> Polygon (Chain ID: 137)
+                            </p>
+                            <p className="text-lg mt-2">
+                                <span className="font-medium">Balance:</span> {balance} POL
                             </p>
                         </div>
                         <div>
