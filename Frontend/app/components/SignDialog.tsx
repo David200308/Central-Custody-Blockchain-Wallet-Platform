@@ -74,6 +74,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
   });  
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [signature, setSignature] = useState<string>("");
+  const [showFullSignature, setShowFullSignature] = useState<boolean>(false);
 
   const isPolygonAddress = (address: string): boolean => /^(0x)?[0-9a-fA-F]{40}$/.test(address);
 
@@ -118,13 +119,9 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
     if (open && activeTab === "transaction") {
       const fetchGasAndNonce = async () => {
         try {
-          // Fetch Gas Fee
           const gasFeeData = await fetchGasFee(transactionDetails.chainId);
-  
-          // Fetch Nonce
           const nonce = await fetchNewNonce(transactionDetails.chainId, walletAddress);
-  
-          // Update state with fetched values
+
           setTransactionDetails((prev) => ({
             ...prev,
             maxFeePerGas: gasFeeData.data.feePerGas.toString(),
@@ -148,7 +145,6 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
         <DialogPanel className="max-w-lg w-full bg-white rounded-xl shadow-xl p-8 border border-gray-200">
           <DialogTitle className="font-semibold text-2xl text-gray-900 text-center">Sign Message / Transaction</DialogTitle>
 
-          {/* Tab Buttons */}
           <div className="flex justify-center space-x-4 mt-6">
             {["message", "transaction"].map((tab) => (
               <button
@@ -163,7 +159,6 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             ))}
           </div>
 
-          {/* Content Section */}
           <div className="mt-6">
             {activeTab === "message" ? (
               <textarea
@@ -190,7 +185,6 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             )}
           </div>
 
-          {/* Buttons */}
           <div className="mt-6 space-y-3">
             <button className="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800" onClick={handleSubmit}>
               Confirm
@@ -200,14 +194,27 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             </button>
           </div>
 
-          {/* Signature Display */}
           {signature && (
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
               <p className="text-sm text-gray-800">
                 <strong>Signature:</strong>
                 <br />
-                {signature}
+                {showFullSignature ? signature : `${signature.slice(0, 10)}...${signature.slice(-10)}`}
               </p>
+              <div className="flex items-center space-x-3 mt-2">
+                <button
+                  className="text-blue-600 text-sm hover:underline"
+                  onClick={() => setShowFullSignature((prev) => !prev)}
+                >
+                  {showFullSignature ? "Hide" : "Show Full"}
+                </button>
+                <button
+                  className="text-sm text-gray-700 bg-gray-300 px-2 py-1 rounded-md hover:bg-gray-400"
+                  onClick={() => navigator.clipboard.writeText(signature)}
+                >
+                  Copy
+                </button>
+              </div>
             </div>
           )}
         </DialogPanel>
