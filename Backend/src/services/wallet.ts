@@ -60,7 +60,7 @@ export class WalletServices {
 
     async signMessage(userId: number, message: Object, token: string): Promise<string> {
         try {
-            const response = await fetch(this.createWalletFunctionURL, {
+            const response = await fetch(this.requestSignatureFunctionURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
