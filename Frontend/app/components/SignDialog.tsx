@@ -28,6 +28,11 @@ interface GasFeeResult {
   };
 }
 
+interface NonceResult {
+  success: string;
+  nonce: number;
+}
+
 const fetchGasFee = async (chainId: number): Promise<GasFeeResult> => {
   const response = await fetch(`/api/blockchain/gas/${chainId}`);
   if (!response.ok) {
@@ -36,7 +41,7 @@ const fetchGasFee = async (chainId: number): Promise<GasFeeResult> => {
   return response.json();
 };
 
-const fetchNewNonce = async (chainId: number, walletAddress: string): Promise<number> => {
+const fetchNewNonce = async (chainId: number, walletAddress: string): Promise<NonceResult> => {
   const response = await fetch(`/api/wallet/new-transaction/nonce/${chainId}/${walletAddress}`);
   if (!response.ok) {
     throw new Error("Failed to fetch new nonce");
@@ -126,7 +131,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             ...prev,
             maxFeePerGas: gasFeeData.data.feePerGas.toString(),
             maxPriorityFeePerGas: gasFeeData.data.priorityFeePerGas.toString(),
-            nonce: nonce.toString(),
+            nonce: nonce.nonce.toString(),
           }));
         } catch (error) {
           console.error("Error fetching gas fee or nonce:", error);
