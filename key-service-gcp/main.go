@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/big"
 	"os"
 
 	"crypto/ecdsa"
@@ -17,7 +16,6 @@ import (
 
 	"database/sql"
 
-	"encoding/asn1"
 	"encoding/hex"
 	"encoding/pem"
 
@@ -48,9 +46,6 @@ const kmsPublicKeyPemString = kmsPublicKeyPemCtxKey("kmsPublicKeyPem")
 const dbClientCtxKeyString = dbClientCtxKey("dbClientCtxKey")
 const firebaseClientCtxKeyString = firebaseClientCtxKey("firebaseClientCtxKey")
 const firestoreClientCtxKeyString = firestoreClientCtxKey("firestoreClientCtxKey")
-
-var secp256k1N = crypto.S256().Params().N
-var secp256k1HalfN = new(big.Int).Div(secp256k1N, big.NewInt(2))
 
 func kmsClient() *kms.KeyManagementClient {
 	return ctx.Value(kmsClientCtxKeyString).(*kms.KeyManagementClient)
@@ -244,21 +239,6 @@ func insertEncryptedKeyInFirestore(uid string, encryptedKey string) (*firestore.
 	})
 }
 
-type asn1EcSig struct {
-	R asn1.RawValue
-	S asn1.RawValue
-}
-
-func (signature *asn1EcSig) getRS() (string, string) {
-	rHexString, sBytes := hex.EncodeToString(signature.R.Bytes), signature.S.Bytes
-	sBigInt := new(big.Int).SetBytes(sBytes)
-	if sBigInt.Cmp(secp256k1HalfN) > 0 {
-		sBytes = new(big.Int).Sub(secp256k1N, sBigInt).Bytes()
-	}
-	sHexString := hex.EncodeToString(sBytes)
-	return rHexString[len(rHexString)-64:], sHexString[len(sHexString)-64:]
-}
-
 func signingHandler(w http.ResponseWriter, r *http.Request) {
 	digest, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -276,27 +256,24 @@ func signingHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(w, "getting key failed: %s", err.Error())
 		return
 	}
+
 	digestHexBytes, err := hex.DecodeString(string(digest))
 	if err != nil {
 		respondError(w, "error decoding hex string")
 		return
 	}
-	signature, err := privateKey.Sign(rand.Reader, digestHexBytes, nil)
+
+	ethereumPrefix := fmt.Sprintf("\x19Ethereum Signed Message:\n%d", len(digestHexBytes))
+	hashedMessage := crypto.Keccak256([]byte(ethereumPrefix), digestHexBytes)
+
+	signature, err := crypto.Sign(hashedMessage, privateKey)
 	if err != nil {
 		respondError(w, "signing failed")
 		return
 	}
 
-	var signatureComponents asn1EcSig
-	_, err = asn1.Unmarshal(signature, &signatureComponents)
-	if err != nil {
-		respondError(w, "unmarshal failed")
-		return
-	}
-
-	rHexStr, sHexStr := signatureComponents.getRS()
-	// jank way to make it an array so .json() in TypeScript works
-	respondOk(w, []byte(fmt.Sprintf("[\"0x%s\", \"0x%s\"]", rHexStr, sHexStr)))
+	signatureHex := hex.EncodeToString(signature)
+	respondOk(w, []byte(signatureHex))
 }
 
 func generateKeyHandler(w http.ResponseWriter, r *http.Request) {

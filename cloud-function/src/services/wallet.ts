@@ -2,7 +2,6 @@ import { onCall, CallableRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 import { fetch } from 'undici';
 import jwt from 'jsonwebtoken';
-import { BigNumber } from "ethers";
 
 const BASE_URL = 'http://10.128.0.2:3100';
 
@@ -135,50 +134,19 @@ export const requestSignature = onCall(
                 throw new Error('Unauthorized request');
             }
 
+            const hexMessage = Buffer.from(message, 'utf-8').toString('hex');
+
             const signRes = await fetch(`${BASE_URL}/sign/${uid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
-                body: Buffer.from(message, 'utf-8').toString('hex'),
+                body: hexMessage,
             });
 
             const textResponse = await signRes.text();
 
-            try {
-                const signatureArray = JSON.parse(textResponse);
-        
-                if (!Array.isArray(signatureArray) || signatureArray.length !== 2) {
-                    throw new Error("Invalid signature format from signing service");
-                }
-        
-                let [rHex, sHex] = signatureArray;
-        
-                let r = BigNumber.from(rHex);
-                let s = BigNumber.from(sHex);
-        
-                let v = 27;
-                const secp256k1N = BigNumber.from(
-                    "0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"
-                );
-                if (s.gt(secp256k1N.div(2))) {
-                    s = secp256k1N.sub(s);
-                    v = 28;
-                }
-        
-                const signature = r.toHexString().padStart(66, "0") + 
-                                  s.toHexString().padStart(66, "0") + 
-                                  v.toString(16).padStart(2, "0");
-        
-                const finalSignature = "0x" + signature.replace(/^0x/, "");
-        
-                console.log(`UID: ${uid} - Ethereum Signature: ${finalSignature}`);
-                return finalSignature;
-            }
-            catch (error) {
-                logger.error(`UID: ${uid} - Failed to parse signature: ${error}`);
-                throw new Error('Failed to parse signature');
-            }
-        } catch (err) {
-            logger.error('Unexpected error:', err);
+            return "0x" + textResponse;
+        } catch (error) {
+            logger.error('Error in requestSignature:', error);
             throw new Error('Internal server error');
         }
     }
