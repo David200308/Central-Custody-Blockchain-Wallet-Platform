@@ -146,18 +146,20 @@ export const requestSignature = onCall(
             const signRes = await fetch(`${BASE_URL}/sign/${uid}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
-                body: message,
+                body: Buffer.from(message, 'utf-8').toString('hex'),
             });
 
-            if (!signRes.ok) {
-                logger.error(`UID: ${uid} - Failed to sign message`);
-                throw new Error('Failed to sign message');
+            const textResponse = await signRes.text();
+
+            try {
+                const signature = JSON.parse(textResponse);
+                logger.info(`UID: ${uid} - Signature: ${JSON.stringify(signature)}`);
+                return signature;
+            } catch (error) {
+                logger.error(`UID: ${uid} - Failed to parse response as JSON. Response: ${textResponse}`);
+                throw new Error('Invalid JSON response from signing service');
             }
-
-            const signature = await signRes.json();
-            logger.info(`UID: ${uid} - Signature: ${JSON.stringify(signature)}`);
-
-            return signature;
+            
         } catch (err) {
             logger.error('Unexpected error:', err);
             throw new Error('Internal server error');

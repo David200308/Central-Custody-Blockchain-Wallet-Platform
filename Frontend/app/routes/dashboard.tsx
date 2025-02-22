@@ -111,7 +111,7 @@ export default function Dashboard() {
                             >
                                 Sign Message / Transaction
                             </button>
-                            <SignDialog open={signDialogOpen} closeDialog={() => setSignDialogOpen(false)} />
+                            <SignDialog open={signDialogOpen} walletAddress={walletAddress} closeDialog={() => setSignDialogOpen(false)} />
                         </div>
                         <div>
                             <button

@@ -1,9 +1,22 @@
-import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
-import { useEffect, useState } from 'react';
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useEffect, useState } from "react";
+
+interface TransactionDetails {
+  value: string;
+  to: string;
+  nonce: string;
+  maxFeePerGas: string;
+  maxPriorityFeePerGas: string;
+  type: number;
+  chainId: number;
+  gas: number;
+  [key: string]: string | number;
+}
 
 interface SignDialogProps {
   open: boolean;
   closeDialog: () => void;
+  walletAddress: string;
 }
 
 interface GasFeeResult {
@@ -12,224 +25,191 @@ interface GasFeeResult {
   data: {
     feePerGas: number;
     priorityFeePerGas: number;
-  }
+  };
 }
 
-const fetchGasFee = async (chainId: number) => {
-  const logsResponse = await fetch(`/api/blockchain/gas/${chainId}`);
-  if (!logsResponse.ok) {
+const fetchGasFee = async (chainId: number): Promise<GasFeeResult> => {
+  const response = await fetch(`/api/blockchain/gas/${chainId}`);
+  if (!response.ok) {
     throw new Error("Failed to fetch gas fee");
   }
-  const data = await logsResponse.json();
-  return data as GasFeeResult;
+  return response.json();
 };
 
-const requestSignature = async (mode: string, requestData: Object) => {
+const fetchNewNonce = async (chainId: number, walletAddress: string): Promise<number> => {
+  const response = await fetch(`/wallet/new-transaction/nonce/${chainId}/${walletAddress}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch new nonce");
+  }
+  return response.json();
+};
+
+const requestSignature = async (mode: "message" | "transaction", requestData: object): Promise<string> => {
   const response = await fetch(`/api/wallet/sign/${mode}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(requestData),
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to get registration options from server');
-  }
-
   const res = await response.json();
-  if (!res.success && !res.signature) {
-    throw new Error('Request signature failed');
+  if (!response.ok || !res.success || !res.signature) {
+    throw new Error("Request signature failed");
   }
-  
-  return res.signature;
-}
 
-export function SignDialog({ open, closeDialog }: SignDialogProps) {
-  const [activeTab, setActiveTab] = useState<'message' | 'transaction'>('message');
+  return res.signature;
+};
+
+export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps) {
+  const [activeTab, setActiveTab] = useState<"message" | "transaction">("message");
   const [message, setMessage] = useState<string>("");
-  const [transactionDetails, setTransactionDetails] = useState({
-    value: '',
-    to: '',
-    nonce: '',
-    maxFeePerGas: '',
-    maxPriorityFeePerGas: '',
+  const [transactionDetails, setTransactionDetails] = useState<TransactionDetails>({
+    value: "",
+    to: "",
+    nonce: "",
+    maxFeePerGas: "",
+    maxPriorityFeePerGas: "",
     type: 2,
     chainId: 137,
     gas: 21000,
-  });
-  const [errors, setErrors] = useState({
-    to: '',
-    value: '',
-    nonce: '',
-    maxFeePerGas: '',
-    maxPriorityFeePerGas: '',
-  });
+  });  
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [signature, setSignature] = useState<string>("");
 
-  const isPolygonAddress = (address: string) => {
-    const polygonRegex = /^(0x)?[0-9a-fA-F]{40}$/;
-    return polygonRegex.test(address);
-  };
+  const isPolygonAddress = (address: string): boolean => /^(0x)?[0-9a-fA-F]{40}$/.test(address);
 
-  const validateFields = () => {
-    const newErrors: {
-      to: string;
-      value: string;
-      nonce: string;
-      maxFeePerGas: string;
-      maxPriorityFeePerGas: string;
-    } = {
-      to: '',
-      value: '',
-      nonce: '',
-      maxFeePerGas: '',
-      maxPriorityFeePerGas: '',
-    };
+  const validateFields = (): boolean => {
+    const newErrors: Record<string, string> = {};
 
     if (!isPolygonAddress(transactionDetails.to)) {
-      newErrors.to = 'Invalid Polygon wallet address.';
+      newErrors.to = "Invalid Polygon wallet address.";
     }
 
-    ['value', 'nonce', 'maxFeePerGas', 'maxPriorityFeePerGas'].forEach((field) => {
+    ["value", "nonce", "maxFeePerGas", "maxPriorityFeePerGas"].forEach((field) => {
       const value = Number(transactionDetails[field as keyof typeof transactionDetails]);
       if (isNaN(value) || value <= 0) {
-        newErrors[field as keyof typeof newErrors] = `${field} must be a positive number.`;
+        newErrors[field] = `${field} must be a positive number.`;
       }
     });
 
     setErrors(newErrors);
-    return Object.values(newErrors).every((error) => !error);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTransactionDetails((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleTabChange = (tab: 'message' | 'transaction') => {
-    setActiveTab(tab);
+    setTransactionDetails((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async () => {
-    if (activeTab === 'transaction' && !validateFields()) {
-      return;
-    }
-
-    if (activeTab === 'message') {
-      console.log('Sign Message Start');
-      const messageSignature = await requestSignature(activeTab, { message: message });
-      setSignature(messageSignature);
-      
-    } else {
-      console.log('Sign Transaction Start:', transactionDetails);
-      const transactionSignature = await requestSignature(activeTab, transactionDetails);
-      setSignature(transactionSignature);
+    try {
+      if (activeTab === "transaction") {
+        if (!validateFields()) return;
+        const transactionSignature = await requestSignature("transaction", transactionDetails);
+        setSignature(transactionSignature);
+      } else {
+        const messageSignature = await requestSignature("message", { message });
+        setSignature(messageSignature);
+      }
+    } catch (error) {
+      console.error("Signing Error:", error);
     }
   };
 
   useEffect(() => {
-    if (activeTab === 'transaction') {
-      fetchGasFee(transactionDetails.chainId)
-        .then((data) => {
+    if (open && activeTab === "transaction") {
+      const fetchGasAndNonce = async () => {
+        try {
+          // Fetch Gas Fee
+          const gasFeeData = await fetchGasFee(transactionDetails.chainId);
+  
+          // Fetch Nonce
+          const nonce = await fetchNewNonce(transactionDetails.chainId, walletAddress);
+  
+          // Update state with fetched values
           setTransactionDetails((prev) => ({
             ...prev,
-            maxFeePerGas: data.data.feePerGas.toString(),
-            maxPriorityFeePerGas: data.data.priorityFeePerGas.toString(),
+            maxFeePerGas: gasFeeData.data.feePerGas.toString(),
+            maxPriorityFeePerGas: gasFeeData.data.priorityFeePerGas.toString(),
+            nonce: nonce.toString(),
           }));
-        })
-        .catch((error) => {
-          console.error('Failed to fetch gas fee:', error);
-        });
+        } catch (error) {
+          console.error("Error fetching gas fee or nonce:", error);
+        }
+      };
+  
+      fetchGasAndNonce();
     }
-  }, [activeTab, transactionDetails.chainId]);
+  }, [open, activeTab, transactionDetails.chainId]);
+  
 
   return (
-    <Dialog open={open} onClose={closeDialog} className="relative z-50 text-black">
-      <div className="fixed inset-0 bg-black bg-opacity-30" aria-hidden="true"></div>
+    <Dialog open={open} onClose={closeDialog} className="relative z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-md" aria-hidden="true"></div>
+      <div className="fixed inset-0 flex items-center justify-center p-6">
+        <DialogPanel className="max-w-lg w-full bg-white rounded-xl shadow-xl p-8 border border-gray-200">
+          <DialogTitle className="font-semibold text-2xl text-gray-900 text-center">Sign Message / Transaction</DialogTitle>
 
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel className="max-w-lg space-y-6 border bg-white p-12 rounded-md shadow-md">
-          <DialogTitle className="font-bold text-2xl">Sign Message / Transaction</DialogTitle>
-          <div className="flex space-x-4">
-            <button
-              className={`px-4 py-2 rounded ${activeTab === 'message' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
+          {/* Tab Buttons */}
+          <div className="flex justify-center space-x-4 mt-6">
+            {["message", "transaction"].map((tab) => (
+              <button
+                key={tab}
+                className={`px-5 py-2 rounded-lg text-sm font-medium ${
+                  activeTab === tab ? "bg-gray-900 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
-              onClick={() => handleTabChange('message')}
-            >
-              Message
-            </button>
-            <button
-              className={`px-4 py-2 rounded ${activeTab === 'transaction' ? 'bg-black text-white' : 'bg-gray-200 text-gray-700'
-                }`}
-              onClick={() => handleTabChange('transaction')}
-            >
-              Transaction
-            </button>
+                onClick={() => setActiveTab(tab as "message" | "transaction")}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
 
-          {activeTab === 'message' ? (
-            <div className="space-y-4">
+          {/* Content Section */}
+          <div className="mt-6">
+            {activeTab === "message" ? (
               <textarea
                 placeholder="Enter message to sign"
-                className="w-full border rounded p-2 bg-white"
-                onChange={(event) => {
-                  setMessage(event.target.value);
-                }}
+                className="w-full border border-gray-300 rounded-lg p-3"
+                onChange={(e) => setMessage(e.target.value)}
               />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {['to', 'value', 'nonce', 'maxFeePerGas', 'maxPriorityFeePerGas'].map((field) => (
-                <div key={field}>
-                  <label className="block text-sm font-medium text-gray-700">{field}</label>
-                  <input
-                    type={field === 'value' ? 'number' : 'text'}
-                    name={field}
-                    value={transactionDetails[field as keyof typeof transactionDetails]}
-                    onChange={handleInputChange}
-                    className="w-full border rounded p-2 bg-white"
-                  />
-                  {errors[field as keyof typeof errors] && (
-                    <p className="text-red-500 text-sm">{errors[field as keyof typeof errors]}</p>
-                  )}
-                </div>
-              ))}
-
-              <div>
-                <p className="text-sm text-gray-700">
-                  <strong>Type:</strong> {transactionDetails.type}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Chain ID:</strong> {transactionDetails.chainId}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Gas:</strong> {transactionDetails.gas}
-                </p>
+            ) : (
+              <div className="space-y-4">
+                {["to", "value", "nonce", "maxFeePerGas", "maxPriorityFeePerGas"].map((field) => (
+                  <div key={field}>
+                    <label className="block text-sm font-medium">{field}</label>
+                    <input
+                      type={field === "value" ? "number" : "text"}
+                      name={field}
+                      value={transactionDetails[field]}
+                      onChange={handleInputChange}
+                      className="w-full border border-gray-300 rounded-lg p-3"
+                    />
+                    {errors[field] && <p className="text-red-500 text-sm">{errors[field]}</p>}
+                  </div>
+                ))}
               </div>
+            )}
+          </div>
+
+          {/* Buttons */}
+          <div className="mt-6 space-y-3">
+            <button className="w-full py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800" onClick={handleSubmit}>
+              Confirm
+            </button>
+            <button className="w-full py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300" onClick={closeDialog}>
+              Cancel
+            </button>
+          </div>
+
+          {/* Signature Display */}
+          {signature && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+              <p className="text-sm text-gray-800">
+                <strong>Signature:</strong>
+                <br />
+                {signature}
+              </p>
             </div>
           )}
-
-          <button
-            className="px-6 py-2 w-full bg-black text-white rounded hover:bg-gray-800"
-            onClick={handleSubmit}
-          >
-            Confirm
-          </button>
-          <button
-            className="px-6 py-2 w-full bg-gray-200 text-gray-700 rounded hover:bg-gray-300 mt-4"
-            onClick={
-              () => {
-                setSignature("");
-                closeDialog();
-              }
-            }
-          >
-            Cancel
-          </button>
-          <div>
-            <p className="text-lg mt-2">
-                <span className="font-medium">Signature:</span><br/> {signature}
-            </p>
-          </div>
         </DialogPanel>
       </div>
     </Dialog>
