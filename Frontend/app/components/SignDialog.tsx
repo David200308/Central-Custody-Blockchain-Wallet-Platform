@@ -71,7 +71,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
     type: 2,
     chainId: 137,
     gas: 21000,
-  });  
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [signature, setSignature] = useState<string>("");
   const [showFullSignature, setShowFullSignature] = useState<boolean>(false);
@@ -132,11 +132,11 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
           console.error("Error fetching gas fee or nonce:", error);
         }
       };
-  
+
       fetchGasAndNonce();
     }
   }, [open, activeTab, transactionDetails.chainId]);
-  
+
 
   return (
     <Dialog open={open} onClose={closeDialog} className="relative z-50">
@@ -149,9 +149,8 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             {["message", "transaction"].map((tab) => (
               <button
                 key={tab}
-                className={`px-5 py-2 rounded-lg text-sm font-medium ${
-                  activeTab === tab ? "bg-gray-900 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
+                className={`px-5 py-2 rounded-lg text-sm font-medium ${activeTab === tab ? "bg-gray-900 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
                 onClick={() => setActiveTab(tab as "message" | "transaction")}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -196,14 +195,16 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
 
           {signature && (
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-              <p className="text-sm text-gray-800">
+              <p className="text-sm text-gray-800 break-words">
                 <strong>Signature:</strong>
                 <br />
-                {showFullSignature ? signature : `${signature.slice(0, 10)}...${signature.slice(-10)}`}
+                {showFullSignature
+                  ? signature
+                  : `${signature.slice(0, 10)}...${signature.slice(-10)}`}
               </p>
               <div className="flex items-center space-x-3 mt-2">
                 <button
-                  className="text-blue-600 text-sm hover:underline"
+                  className="text-black text-sm hover:underline"
                   onClick={() => setShowFullSignature((prev) => !prev)}
                 >
                   {showFullSignature ? "Hide" : "Show Full"}
@@ -217,6 +218,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
               </div>
             </div>
           )}
+
         </DialogPanel>
       </div>
     </Dialog>
