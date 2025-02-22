@@ -13,12 +13,13 @@ export class WalletServices {
 
     constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) { }
 
-    async createWallet(uid: string): Promise<string> {
+    async createWallet(uid: string, token: string): Promise<string> {
         try {
             const response = await fetch(this.createWalletfunctionURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     data: { uid },

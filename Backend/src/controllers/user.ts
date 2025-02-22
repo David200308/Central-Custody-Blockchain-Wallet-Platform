@@ -443,7 +443,7 @@ export class UserController {
                 return;
             }
 
-            const createWalletResult = await this.walletService.createWallet(user.id.toString());
+            const createWalletResult = await this.walletService.createWallet(user.id.toString(), tokenAuth);
             if (!createWalletResult) {
                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create wallet failed'
