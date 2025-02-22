@@ -39,7 +39,7 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
     }, []);
 
     const totalPages = Math.ceil(signReq.length / signreqPerPage);
-    const paginatedSignReq = signReq.slice((currentPage - 1) * signreqPerPage, currentPage * signreqPerPage);
+    const paginatedSignReq = signReq.slice((currentPage - 1) * signreqPerPage, currentPage * signreqPerPage) ?? [];
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
@@ -62,7 +62,7 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
                     <div className="space-y-6">
                         <ul className="mt-4 space-y-4">
                             {
-                                signReq ?
+                                signReq && paginatedSignReq ?
                                 paginatedSignReq.map((signReq) => (
                                     <li key={signReq.signrequest_id} className="p-4 border-l-4 border-gray-400 rounded-lg">
                                         <span className="font-semibold">Request Time:</span>{" "}
