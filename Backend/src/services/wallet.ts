@@ -32,15 +32,15 @@ export class WalletServices {
                 throw new Error('Failed to create wallet: ' + error);
             }
 
-            const createWalletResponse = await response.json();
-            const walletAddress = createWalletResponse.address;
+            const address = await response.text();
+            console.log('Wallet address for UID:', uid, 'is:', address);
             
             const client = await pool.connect();
             const sql = ADD_WALLET_SQL;
-            await client.query(sql, [generateUuid(), uid, walletAddress]);
+            await client.query(sql, [generateUuid(), uid, address]);
             client.release();
 
-            return walletAddress;
+            return address;
 
         } catch (error) {
             console.error('Error calling Firebase function:', error);

@@ -36,7 +36,7 @@ export const createWalletAndGetAddress = onCall(
         vpcConnector: 'key-service-connector',
         secrets: ['JWT_PUBLIC_KEY']
     },
-    async (request: CallableRequest<WalletRequestData>) => {
+    async (request: CallableRequest<WalletRequestData>, response: any) => {
         try {
             const headers = request.rawRequest.headers;
             const authHeader = headers['authorizationwallet'] as string;
@@ -84,12 +84,10 @@ export const createWalletAndGetAddress = onCall(
             const address = await addressRes.text();
             logger.info(`UID: ${uid} - Address: ${address}`);
 
-            return { address };
+            return address;
         } catch (err) {
             logger.error('Unexpected error:', err);
             throw new Error('Internal server error');
         }
     }
 );
-
-
