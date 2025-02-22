@@ -195,21 +195,20 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
           </div>
 
           {signature && (
-            <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-              <p className="text-sm text-gray-800">
-                <strong>Signature:</strong>
-                <br />
+            <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
+              <strong>Signature:</strong>
+              <div className="max-h-16 overflow-hidden rounded-md bg-gray-200 p-2 text-xs break-all">
                 {showFullSignature ? signature : `${signature.slice(0, 10)}...${signature.slice(-10)}`}
-              </p>
+              </div>
               <div className="flex items-center space-x-3 mt-2">
                 <button
-                  className="text-blue-600 text-sm hover:underline"
+                  className="text-blue-600 text-xs hover:underline"
                   onClick={() => setShowFullSignature((prev) => !prev)}
                 >
                   {showFullSignature ? "Hide" : "Show Full"}
                 </button>
                 <button
-                  className="text-sm text-gray-700 bg-gray-300 px-2 py-1 rounded-md hover:bg-gray-400"
+                  className="text-xs text-gray-700 bg-gray-300 px-2 py-1 rounded-md hover:bg-gray-400"
                   onClick={() => navigator.clipboard.writeText(signature)}
                 >
                   Copy
