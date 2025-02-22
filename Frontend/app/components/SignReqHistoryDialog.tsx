@@ -71,6 +71,7 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
                                         </span>
                                         <br />
                                         <span className="font-semibold">Content Type:</span> <span>{signReq.content_type}</span>
+                                        <br />
                                         <span className="font-semibold">Request Status:</span> <span>{signReq.request_status}</span>
                                     </li>
                                 )) : <li>No sign request data</li>
