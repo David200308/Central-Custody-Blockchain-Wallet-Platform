@@ -92,7 +92,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
 
     ["value", "nonce", "maxFeePerGas", "maxPriorityFeePerGas"].forEach((field) => {
       const value = Number(transactionDetails[field as keyof typeof transactionDetails]);
-      if (isNaN(value) || value <= 0) {
+      if (isNaN(value) || value < 0) {
         newErrors[field] = `${field} must be a positive number.`;
       }
     });
