@@ -38,7 +38,7 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
             });
     }, []);
 
-    const totalPages = Math.ceil(signReq.length / signreqPerPage);
+    const totalPages = signReq ? Math.ceil(signReq.length / signreqPerPage) : 1;
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
