@@ -94,14 +94,17 @@ export default function Dashboard() {
 
             <div className="mt-8 p-6 bg-white shadow rounded-lg text-black flex">
                 <div className="flex-1">
-                    <h2 className="text-2xl font-semibold">User Information</h2>
+                    <h2 className="text-2xl font-semibold">Wallet Control Panel</h2>
                     <div className="mt-4 space-y-4">
                         <div>
                             <p className="text-lg mt-2">
                                 <span className="font-medium">Email:</span> {user.email}
                             </p>
                             <p className="text-lg mt-2">
-                                <span className="font-medium">Polygon Wallet Address:</span> {walletAddress}
+                                <span className="font-medium">Wallet Address:</span> {walletAddress}
+                            </p>
+                            <p className="text-lg mt-2">
+                                <span className="font-medium">Chain Info:</span> Polygon (Chain ID: 137)
                             </p>
                         </div>
                         <div>

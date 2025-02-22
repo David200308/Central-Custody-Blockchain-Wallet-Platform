@@ -6,44 +6,53 @@ interface SignReqHistoryDialogProps {
     closeDialog: () => void;
 }
 
+interface SignReqs {
+    signrequest_id: number,
+    user_id: number,
+    request_time: string,
+    content_type: string,
+    request_status: string
+}
+
 export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialogProps) {
-    // const [logs, setLogs] = useState<Logs[]>([]);
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const logsPerPage = 5;
+    const [signReq, setSignReq] = useState<SignReqs[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const logsPerPage = 5;
 
-    // const fetchLogs = async () => {
-    //     const logsResponse = await fetch('/api/user/logs');
-    //     if (!logsResponse.ok) {
-    //         throw new Error("Failed to fetch logs");
-    //     }
-    //     const logsData = await logsResponse.json();
-    //     setLogs(logsData);
-    // };
+    const fetchLogs = async () => {
+        const chainId = 137;
+        const logsResponse = await fetch(`/api/wallet/transactions/${chainId}`);
+        if (!logsResponse.ok) {
+            throw new Error("Failed to fetch logs");
+        }
+        const logsData = await logsResponse.json();
+        setSignReq(logsData);
+    };
 
-    // useEffect(() => {
-    //     fetchLogs()
-    //         .then(() => {
-    //             console.log("Fetched successfully!");
-    //         })
-    //         .catch((error) => {
-    //             console.log("Failed to fetch logs:", error);
-    //         });
-    // }, []);
+    useEffect(() => {
+        fetchLogs()
+            .then(() => {
+                console.log("Fetched successfully!");
+            })
+            .catch((error) => {
+                console.log("Failed to fetch logs:", error);
+            });
+    }, []);
 
-    // const totalPages = Math.ceil(logs.length / logsPerPage);
-    // const paginatedLogs = logs.slice((currentPage - 1) * logsPerPage, currentPage * logsPerPage);
+    const totalPages = Math.ceil(signReq.length / logsPerPage);
+    const paginatedSignReq = signReq.slice((currentPage - 1) * logsPerPage, currentPage * logsPerPage);
 
-    // const handleNextPage = () => {
-    //     if (currentPage < totalPages) {
-    //         setCurrentPage((prev) => prev + 1);
-    //     }
-    // };
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
 
-    // const handlePrevPage = () => {
-    //     if (currentPage > 1) {
-    //         setCurrentPage((prev) => prev - 1);
-    //     }
-    // };
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage((prev) => prev - 1);
+        }
+    };
 
     return (
         <Dialog open={open} onClose={closeDialog} className="relative z-50 text-black">
@@ -52,15 +61,16 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
                 <DialogPanel className="max-w-lg space-y-6 border bg-white p-12 rounded-md">
                     <DialogTitle className="font-bold text-2xl">Signature Request History</DialogTitle>
                     <div className="space-y-6">
-                        {/* <ul className="mt-4 space-y-4">
-                            {paginatedLogs.map((log) => (
-                                <li key={log.log_id} className="p-4 border-l-4 border-gray-400 rounded-lg">
-                                    <span className="font-semibold">Log Time:</span>{" "}
+                        <ul className="mt-4 space-y-4">
+                            {paginatedSignReq.map((signReq) => (
+                                <li key={signReq.signrequest_id} className="p-4 border-l-4 border-gray-400 rounded-lg">
+                                    <span className="font-semibold">Request Time:</span>{" "}
                                     <span>
-                                        {log.log_time.split("T")[0] + " " + log.log_time.split("T")[1].split(".")[0]}
+                                        {signReq.request_time.split("T")[0] + " " + signReq.request_time.split("T")[1].split(".")[0]}
                                     </span>
                                     <br />
-                                    <span className="font-semibold">Content:</span> <span>{log.content}</span>
+                                    <span className="font-semibold">Content Type:</span> <span>{signReq.content_type}</span>
+                                    <span className="font-semibold">Request Status:</span> <span>{signReq.request_status}</span>
                                 </li>
                             ))}
                         </ul>
@@ -86,7 +96,7 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
                             >
                                 Next
                             </button>
-                        </div> */}
+                        </div>
                     </div>
                 </DialogPanel>
             </div>
