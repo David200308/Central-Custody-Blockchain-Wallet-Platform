@@ -20,10 +20,14 @@ import {
     sqliCheck
 } from '../utils/auth';
 import { AuthenticationResponseJSON } from '@simplewebauthn/server';
+import { WalletServices } from '../services/wallet';
 
 @Controller("user")
 export class UserController {
-    constructor(private readonly userService: UserServices) { }
+    constructor(
+        private readonly walletService: WalletServices,
+        private readonly userService: UserServices
+    ) { }
 
     // Get user info
     @Get()
@@ -55,8 +59,21 @@ export class UserController {
             });
             return;
         }
+
+        const walletAddress = await this.walletService.getWalletByUserId(parseInt(payload.aud, 10));
+        if (!walletAddress) {
+            response.status(HttpStatus.NOT_FOUND).json({
+                message: 'Wallet not found',
+            });
+            return;
+        };
+
+        const responseData = {
+            ...data,
+            walletAddress
+        };
         
-        response.status(HttpStatus.OK).json(data);
+        response.status(HttpStatus.OK).json(responseData);
     }
 
     // Password register
@@ -426,12 +443,34 @@ export class UserController {
                 return;
             }
 
-            const createLogResult = await this.userService.createLog({
+            const createWalletResult = await this.walletService.createWallet(user.id.toString());
+            if (!createWalletResult) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Create wallet failed'
+                });
+                return;
+            }
+
+            console.log(`Wallet address for UserID - ${user.id}:`, createWalletResult);
+
+            const createLogResult1 = await this.userService.createLog({
+                user_id: user.id,
+                content: `Wallet created`,
+            });
+
+            if (!createLogResult1) {
+                response.status(HttpStatus.BAD_REQUEST).json({
+                    message: 'Create log failed'
+                });
+                return;
+            }
+
+            const createLogResult2 = await this.userService.createLog({
                 user_id: user.id,
                 content: `Login via passkey at ISO Time: ${new Date().toISOString()}`,
             });
 
-            if (!createLogResult) {
+            if (!createLogResult2) {
                 response.status(HttpStatus.BAD_REQUEST).json({
                     message: 'Create log failed'
                 });

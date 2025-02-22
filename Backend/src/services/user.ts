@@ -33,6 +33,7 @@ export class UserServices {
         const client = await pool.connect();
         const result = await client.query(sql, [data.email]);
         client.release();
+        
         return result;
     };
 

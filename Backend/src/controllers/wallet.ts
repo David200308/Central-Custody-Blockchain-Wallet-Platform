@@ -14,9 +14,6 @@ export class WalletController {
         private readonly userService: UserServices
     ) { }
 
-    @Post("create")
-    async createWallet(@Req() req: Request, @Res() res: Response) { }
-
     @Get()
     async getWalletAddress(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
         const token = request.cookies?.token;

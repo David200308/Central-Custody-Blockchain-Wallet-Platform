@@ -3,15 +3,57 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { web3Provider } from "../utils/blockchain";
+import { ADD_WALLET_SQL, GET_WALLET_BY_USER_ID_SQL } from "../database/sql/wallet/wallet";
+import { generateUuid } from "../utils/auth";
 
 @Injectable()
 export class WalletServices {
     private readonly logger = new Logger(WalletServices.name);
+    private readonly createWalletfunctionURL = 'https://us-central1-wallet-platform.cloudfunctions.net/createWalletAndGetAddress';
 
     constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) { }
 
+    async createWallet(uid: string): Promise<string> {
+        try {
+            const response = await fetch(this.createWalletfunctionURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    data: { uid },
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('Error calling Firebase function:', error);
+                throw new Error('Failed to create wallet: ' + error);
+            }
+
+            const createWalletResponse = await response.json();
+            const walletAddress = createWalletResponse.address;
+            
+            const client = await pool.connect();
+            const sql = ADD_WALLET_SQL;
+            await client.query(sql, [generateUuid(), uid, walletAddress]);
+            client.release();
+
+            return walletAddress;
+
+        } catch (error) {
+            console.error('Error calling Firebase function:', error);
+            throw new Error('Failed to create wallet: ' + error);
+        }
+    }
+
     async getWalletByUserId(userId: number): Promise<string> {
-        return "0x1234567890";
+        const client = await pool.connect();
+        const sql = GET_WALLET_BY_USER_ID_SQL;
+        const result = await client.query(sql, [userId]);
+        client.release();
+
+        return result.rows[0].wallet_address;
     };
 
     async signMessage(userId: number, message: Object): Promise<string> {
