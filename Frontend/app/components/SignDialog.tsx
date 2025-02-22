@@ -154,7 +154,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
               <button
                 key={tab}
                 className={`px-5 py-2 rounded-lg text-sm font-medium ${
-                  activeTab === tab ? "bg-gray-900 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  activeTab === tab ? "bg-gray-900 text-black shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
                 onClick={() => setActiveTab(tab as "message" | "transaction")}
               >
@@ -168,20 +168,20 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             {activeTab === "message" ? (
               <textarea
                 placeholder="Enter message to sign"
-                className="w-full border border-gray-300 rounded-lg p-3 bg-white text-white"
+                className="w-full border border-gray-300 rounded-lg p-3 bg-white text-black"
                 onChange={(e) => setMessage(e.target.value)}
               />
             ) : (
               <div className="space-y-4">
                 {["to", "value", "nonce", "maxFeePerGas", "maxPriorityFeePerGas"].map((field) => (
                   <div key={field}>
-                    <label className="block text-sm font-medium text-white">{field}</label>
+                    <label className="block text-sm font-medium text-black">{field}</label>
                     <input
                       type={field === "value" ? "number" : "text"}
                       name={field}
                       value={transactionDetails[field]}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-lg p-3 bg-white text-white"
+                      className="w-full border border-gray-300 rounded-lg p-3 bg-white text-black"
                     />
                     {errors[field] && <p className="text-red-500 text-sm">{errors[field]}</p>}
                   </div>
