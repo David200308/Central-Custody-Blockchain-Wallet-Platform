@@ -17,30 +17,29 @@ interface SignReqs {
 export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialogProps) {
     const [signReq, setSignReq] = useState<SignReqs[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const logsPerPage = 5;
+    const signreqPerPage = 5;
 
-    const fetchLogs = async () => {
-        const chainId = 137;
-        const logsResponse = await fetch(`/api/wallet/transactions/${chainId}`);
-        if (!logsResponse.ok) {
-            throw new Error("Failed to fetch logs");
+    const fetchSignReq = async () => {
+        const signReqResponse = await fetch(`/api/user/signreq`);
+        if (!signReqResponse.ok) {
+            throw new Error("Failed to fetch signreq");
         }
-        const logsData = await logsResponse.json();
-        setSignReq(logsData);
+        const signReqData = await signReqResponse.json();
+        setSignReq(signReqData);
     };
 
     useEffect(() => {
-        fetchLogs()
+        fetchSignReq()
             .then(() => {
                 console.log("Fetched successfully!");
             })
             .catch((error) => {
-                console.log("Failed to fetch logs:", error);
+                console.log("Failed to fetch signreq:", error);
             });
     }, []);
 
-    const totalPages = Math.ceil(signReq.length / logsPerPage);
-    const paginatedSignReq = signReq.slice((currentPage - 1) * logsPerPage, currentPage * logsPerPage);
+    const totalPages = Math.ceil(signReq.length / signreqPerPage);
+    const paginatedSignReq = signReq.slice((currentPage - 1) * signreqPerPage, currentPage * signreqPerPage);
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
