@@ -154,7 +154,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
               <button
                 key={tab}
                 className={`px-5 py-2 rounded-lg text-sm font-medium ${
-                  activeTab === tab ? "bg-gray-900 text-black shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  activeTab === tab ? "bg-gray-900 text-white shadow-md" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
                 onClick={() => setActiveTab(tab as "message" | "transaction")}
               >
