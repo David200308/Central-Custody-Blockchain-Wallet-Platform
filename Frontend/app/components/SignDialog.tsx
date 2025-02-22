@@ -168,7 +168,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
             {activeTab === "message" ? (
               <textarea
                 placeholder="Enter message to sign"
-                className="w-full border border-gray-300 rounded-lg p-3"
+                className="w-full border border-gray-300 rounded-lg p-3 bg-white"
                 onChange={(e) => setMessage(e.target.value)}
               />
             ) : (
@@ -181,7 +181,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
                       name={field}
                       value={transactionDetails[field]}
                       onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-lg p-3"
+                      className="w-full border border-gray-300 rounded-lg p-3 bg-white"
                     />
                     {errors[field] && <p className="text-red-500 text-sm">{errors[field]}</p>}
                   </div>
