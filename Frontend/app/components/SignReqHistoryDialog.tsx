@@ -62,17 +62,20 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
                     <DialogTitle className="font-bold text-2xl">Signature Request History</DialogTitle>
                     <div className="space-y-6">
                         <ul className="mt-4 space-y-4">
-                            {paginatedSignReq.map((signReq) => (
-                                <li key={signReq.signrequest_id} className="p-4 border-l-4 border-gray-400 rounded-lg">
-                                    <span className="font-semibold">Request Time:</span>{" "}
-                                    <span>
-                                        {signReq.request_time.split("T")[0] + " " + signReq.request_time.split("T")[1].split(".")[0]}
-                                    </span>
-                                    <br />
-                                    <span className="font-semibold">Content Type:</span> <span>{signReq.content_type}</span>
-                                    <span className="font-semibold">Request Status:</span> <span>{signReq.request_status}</span>
-                                </li>
-                            ))}
+                            {
+                                signReq ?
+                                paginatedSignReq.map((signReq) => (
+                                    <li key={signReq.signrequest_id} className="p-4 border-l-4 border-gray-400 rounded-lg">
+                                        <span className="font-semibold">Request Time:</span>{" "}
+                                        <span>
+                                            {signReq.request_time.split("T")[0] + " " + signReq.request_time.split("T")[1].split(".")[0]}
+                                        </span>
+                                        <br />
+                                        <span className="font-semibold">Content Type:</span> <span>{signReq.content_type}</span>
+                                        <span className="font-semibold">Request Status:</span> <span>{signReq.request_status}</span>
+                                    </li>
+                                )) : null
+                            }
                         </ul>
                         <div className="flex justify-between items-center mt-4">
                             <button
