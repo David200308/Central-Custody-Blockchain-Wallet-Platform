@@ -49,11 +49,24 @@ const fetchNewNonce = async (chainId: number, walletAddress: string): Promise<No
   return response.json();
 };
 
-const requestSignature = async (mode: "message" | "transaction", requestData: object): Promise<string> => {
+const requestSignature = async (mode: "message" | "transaction", requestData: string | TransactionDetails): Promise<string> => {
   const response = await fetch(`/api/wallet/sign/${mode}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(requestData),
+    body: JSON.stringify(
+      typeof requestData === "string"
+        ? { message: requestData }
+        : {
+          value: parseFloat(requestData.value),
+          to: requestData.to,
+          nonce: parseInt(requestData.nonce),
+          maxFeePerGas: parseFloat(requestData.maxFeePerGas),
+          maxPriorityFeePerGas: parseFloat(requestData.maxPriorityFeePerGas),
+          type: requestData.type,
+          chainId: requestData.chainId,
+          gas: requestData.gas,
+        }
+    ),
   });
 
   const res = await response.json();
@@ -112,7 +125,7 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
         const transactionSignature = await requestSignature("transaction", transactionDetails);
         setSignature(transactionSignature);
       } else {
-        const messageSignature = await requestSignature("message", { message });
+        const messageSignature = await requestSignature("message", message);
         setSignature(messageSignature);
       }
     } catch (error) {

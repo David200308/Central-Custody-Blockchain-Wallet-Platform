@@ -155,6 +155,13 @@ export class WalletController {
                 case 'message':
                     if ('message' in bodyData) {
                         const signature = await this.walletService.signMessage(data.id, bodyData.message, token);
+
+                        this.userService.addSignRequest({
+                            user_id: data.id,
+                            content_type: 'message',
+                            request_status: 'completed'
+                        });
+
                         response.status(HttpStatus.OK).json({
                             success: true,
                             signature,
@@ -180,6 +187,13 @@ export class WalletController {
                         isPolygonAddress(bodyData.to)
                     ) {
                         const txSignature = await this.walletService.signTransaction(data.id, bodyData, token);
+
+                        this.userService.addSignRequest({
+                            user_id: data.id,
+                            content_type: 'transaction',
+                            request_status: 'completed'
+                        });
+
                         response.status(HttpStatus.OK).json({
                             success: true,
                             signature: txSignature,

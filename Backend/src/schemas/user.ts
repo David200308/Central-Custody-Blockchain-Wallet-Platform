@@ -41,6 +41,14 @@ export type Logs = {
     content: string
 }
 
+export type SignReqs = {
+    signrequest_id: number,
+    user_id: number,
+    request_time: Date,
+    content_type: string,
+    request_status: string
+}
+
 export type CreatePasskeyRequestBodySchema = {
     passkeyOptions: RegistrationResponseJSON;
     challenge: string;
@@ -57,6 +65,12 @@ export type CreatePasskeySchema = {
 export type CreateLogSchema = {
     user_id: number;
     content: string;
+}
+
+export type AddSignReqSchema = {
+    user_id: number;
+    content_type: string;
+    request_status: string;
 }
 
 export type SignUpSchema = {

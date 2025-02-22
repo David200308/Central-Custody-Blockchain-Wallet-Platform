@@ -95,16 +95,7 @@ export const createWalletAndGetAddress = onCall(
 
 interface SignRequestData {
     uid: number;
-    message: string | {
-        value: number;
-        to: string;
-        nonce: number;
-        maxFeePerGas: number;
-        maxPriorityFeePerGas: number;
-        type: number;
-        chainId: number;
-        gas: number;
-    };
+    message: string;
 }
 
 export const requestSignature = onCall(

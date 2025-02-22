@@ -1,7 +1,7 @@
 import { pool } from "../database/database";
-import { SignUpSchema, User, Logs, CreateLogSchema, CreateAuthRecordSchema, CreatePasskeySchema } from "../schemas/user";
+import { SignUpSchema, User, Logs, CreateLogSchema, CreateAuthRecordSchema, CreatePasskeySchema, AddSignReqSchema, SignReqs } from "../schemas/user";
 import { Inject, Injectable } from '@nestjs/common';
-import { base64ToUint8Array } from "../utils/auth";
+import { base64ToUint8Array, generateUuid } from "../utils/auth";
 import {
     CREATE_USER_SQL,
     ENABLE_PASSKEY_SQL,
@@ -21,6 +21,7 @@ import {
 import {
     CREATE_AUTH_SQL
 } from "../database/sql/user/auth";
+import { ADD_SIGNREQ_SQL, GET_SIGNREQ_BY_USER_ID_SQL } from "../database/sql/signreq/signreq";
 
 @Injectable()
 export class UserServices {
@@ -159,6 +160,19 @@ export class UserServices {
         return result;
     };
 
+    addSignRequest = async (data: AddSignReqSchema) => {
+        const sql = ADD_SIGNREQ_SQL;
+        const client = await pool.connect();
+        const result = await client.query(sql, [
+            data.user_id,
+            generateUuid(), 
+            data.content_type,
+            data.request_status
+        ]);
+        client.release();
+        return result;
+    };
+
     getLogsByUserId = async (userId: number) => {
         const sql = GET_LOGS_BY_USERID;
         const client = await pool.connect();
@@ -173,4 +187,17 @@ export class UserServices {
         return data;
     };
 
+    getSignReqByUserId = async (userId: number) => {
+        const sql = GET_SIGNREQ_BY_USER_ID_SQL;
+        const client = await pool.connect();
+        const result = await client.query(sql, [userId]);
+        client.release();
+        const rows = result.rows;
+        if (rows.length === 0) {
+            return null;
+        }
+
+        const data = rows as SignReqs[];
+        return data;
+    };
 }

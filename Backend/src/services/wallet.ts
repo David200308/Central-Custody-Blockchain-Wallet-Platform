@@ -58,7 +58,7 @@ export class WalletServices {
         return result.rows[0].wallet_address;
     };
 
-    async signMessage(userId: number, message: Object, token: string): Promise<string> {
+    async signMessage(userId: number, message: string, token: string): Promise<string> {
         try {
             const response = await fetch(this.requestSignatureFunctionURL, {
                 method: 'POST',
@@ -91,8 +91,44 @@ export class WalletServices {
         }
     }
 
-    async signTransaction(userId: number, transaction: Object, token: string): Promise<string> {
-        return "test_signature_transaction";
+    async signTransaction(userId: number, transaction: object, token: string): Promise<string> {
+        try {
+            const bodyData = JSON.stringify(transaction);
+            
+            const requiredFields = ['to', 'value', 'nonce', 'type', 'chainId', 'gas', 'maxFeePerGas', 'maxPriorityFeePerGas'];
+            const isValidTransaction = requiredFields.every(field => field in transaction);
+    
+            const message = isValidTransaction ? bodyData : bodyData;
+    
+            const response = await fetch(this.requestSignatureFunctionURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorizationwallet': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    data: { 
+                        uid: userId,
+                        message,
+                    },
+                }),
+            });
+    
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('Error calling Firebase function:', error);
+                throw new Error('Failed to sign transaction: ' + error);
+            }
+    
+            const signResponse = await response.json();
+            const signature = signResponse.result;
+            console.log('Transaction signature for UID:', userId, 'is:', signature);
+                
+            return signature;
+        } catch (error) {
+            console.error('Failed to sign transaction:', error);
+            throw new Error('Failed to sign transaction: ' + error);
+        }
     }
 
     async getNewTransactionNonce(walletAddress: string, chainId: number): Promise<number> {
