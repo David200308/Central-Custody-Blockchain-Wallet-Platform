@@ -9,13 +9,14 @@ import { generateUuid } from "../utils/auth";
 @Injectable()
 export class WalletServices {
     private readonly logger = new Logger(WalletServices.name);
-    private readonly createWalletfunctionURL = 'https://us-central1-wallet-platform.cloudfunctions.net/createWalletAndGetAddress';
+    private readonly createWalletFunctionURL = 'https://us-central1-wallet-platform.cloudfunctions.net/createWalletAndGetAddress';
+    private readonly requestSignatureFunctionURL = 'https://us-central1-wallet-platform.cloudfunctions.net/requestSignature';
 
     constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) { }
 
     async createWallet(uid: string, token: string): Promise<string> {
         try {
-            const response = await fetch(this.createWalletfunctionURL, {
+            const response = await fetch(this.createWalletFunctionURL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,8 +58,37 @@ export class WalletServices {
         return result.rows[0].wallet_address;
     };
 
-    async signMessage(userId: number, message: Object): Promise<string> {
-        return "test_signature_message";
+    async signMessage(userId: number, message: Object, token: string): Promise<string> {
+        try {
+            const response = await fetch(this.createWalletFunctionURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorizationwallet': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    data: { 
+                        uid: userId,
+                        message,
+                     },
+                }),
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('Error calling Firebase function:', error);
+                throw new Error('Failed to create wallet: ' + error);
+            }
+
+            const signResponse = await response.json();
+            const sign = signResponse.result;
+            console.log('Sign for UID:', userId, 'is:', sign);
+
+            return sign;
+        } catch (error) {
+            console.error('Failed to sign:', error);
+            throw new Error('Failed to sign: ' + error);
+        }
     }
 
     async signTransaction(userId: number, transaction: Object): Promise<string> {

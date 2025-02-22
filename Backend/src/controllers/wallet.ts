@@ -159,7 +159,7 @@ export class WalletController {
                             "message_payload": bodyData.message
                         }
                         
-                        const signature = await this.walletService.signMessage(data.id, message);
+                        const signature = await this.walletService.signMessage(data.id, message, token);
                         response.status(HttpStatus.OK).json({
                             success: true,
                             signature,

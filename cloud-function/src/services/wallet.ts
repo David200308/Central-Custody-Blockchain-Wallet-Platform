@@ -36,7 +36,7 @@ export const createWalletAndGetAddress = onCall(
         vpcConnector: 'key-service-connector',
         secrets: ['JWT_PUBLIC_KEY']
     },
-    async (request: CallableRequest<WalletRequestData>, response: any) => {
+    async (request: CallableRequest<WalletRequestData>) => {
         try {
             const headers = request.rawRequest.headers;
             const authHeader = headers['authorizationwallet'] as string;
@@ -85,6 +85,77 @@ export const createWalletAndGetAddress = onCall(
             logger.info(`UID: ${uid} - Address: ${address}`);
 
             return address;
+        } catch (err) {
+            logger.error('Unexpected error:', err);
+            throw new Error('Internal server error');
+        }
+    }
+);
+
+interface SignRequestData {
+    uid: string;
+    message: string | {
+        value: number;
+        to: string;
+        nonce: number;
+        maxFeePerGas: number;
+        maxPriorityFeePerGas: number;
+        type: number;
+        chainId: number;
+        gas: number;
+    };
+}
+
+export const requestSignature = onCall(
+    {
+        region: 'us-central1',
+        memory: '256MiB',
+        timeoutSeconds: 540,
+        vpcConnector: 'key-service-connector',
+        secrets: ['JWT_PUBLIC_KEY']
+    },
+    async (request: CallableRequest<SignRequestData>) => {
+        try {
+            const headers = request.rawRequest.headers;
+            const authHeader = headers['authorizationwallet'] as string;
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                throw new Error('Unauthorized request');
+            }
+
+            const { uid, message } = request.data;
+            if (!uid || typeof uid !== 'string') {
+                throw new Error('Invalid or missing UID');
+            }
+            if (!message || typeof message !== 'string') {
+                throw new Error('Invalid or missing message');
+            }
+
+            const publicKey = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n');
+            if (!publicKey) {
+                logger.error('Public key is missing');
+                return false;
+            }
+
+            const token = authHeader.split(' ')[1];
+            if (await verifyToken(token, uid, publicKey) === false) {
+                throw new Error('Unauthorized request');
+            }
+
+            const signRes = await fetch(`${BASE_URL}/sign/${uid}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: message,
+            });
+
+            if (!signRes.ok) {
+                logger.error(`UID: ${uid} - Failed to sign message`);
+                throw new Error('Failed to sign message');
+            }
+
+            const signature = await signRes.json();
+            logger.info(`UID: ${uid} - Signature: ${JSON.stringify(signature)}`);
+
+            return signature;
         } catch (err) {
             logger.error('Unexpected error:', err);
             throw new Error('Internal server error');
