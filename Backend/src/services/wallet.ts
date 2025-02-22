@@ -19,7 +19,7 @@ export class WalletServices {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'authorizationwallet': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     data: { uid },

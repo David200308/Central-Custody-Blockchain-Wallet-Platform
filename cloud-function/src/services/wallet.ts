@@ -9,17 +9,21 @@ interface WalletRequestData {
     uid: string;
 }
 
-export const verifyToken = async (token: string, uid: string) => {
-    const publicKey = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n');
-    if (!publicKey) return false;
-
+export const verifyToken = async (token: string, uid: string, publicKey: string) => {
     try {
         const payload = jwt.verify(token, publicKey, { algorithms: ["ES256"] });
-        if (typeof payload === 'string') return false;
+        if (typeof payload === 'string') {
+            logger.error('Payload is a string, which is unexpected');
+            return false;
+        }
         
-        if (payload.aud !== uid) return false;
+        if (payload.aud !== uid) {
+            logger.error(`Audience mismatch: expected ${uid}, got ${payload.aud}`);
+            return false;
+        }
         return true;
     } catch (error) {
+        logger.error('Token verification failed:', error);
         return false;
     }
 };
@@ -35,7 +39,7 @@ export const createWalletAndGetAddress = onCall(
     async (request: CallableRequest<WalletRequestData>) => {
         try {
             const headers = request.rawRequest.headers;
-            const authHeader = headers.authorization;
+            const authHeader = headers['authorizationwallet'] as string;
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
                 throw new Error('Unauthorized request');
             }
@@ -45,8 +49,14 @@ export const createWalletAndGetAddress = onCall(
                 throw new Error('Invalid or missing UID');
             }
 
+            const publicKey = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, '\n');
+            if (!publicKey) {
+                logger.error('Public key is missing');
+                return false;
+            }
+
             const token = authHeader.split(' ')[1];
-            if (await verifyToken(token, request.data.uid) === false) {
+            if (await verifyToken(token, request.data.uid, publicKey) === false) {
                 throw new Error('Unauthorized request');
             }
 
