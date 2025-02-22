@@ -231,6 +231,40 @@ export class UserController {
         response.status(HttpStatus.OK).json(data);
     }
 
+    // Logs
+    @Get('signreq')
+    async getSignReq(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+        const token = request.cookies?.token;
+        if (!token) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized',
+            });
+            return;
+        }
+
+        const payload: JwtPayload = await verifyToken(token).catch((err) => {
+            console.error('Token verification failed:', err);
+            throw new Error('Unauthorized');
+        });
+
+        if (typeof payload !== "object" || !(typeof payload.aud === 'string')) {
+            response.status(HttpStatus.UNAUTHORIZED).json({
+                message: 'Unauthorized'
+            });
+            return;
+        }
+
+        const data = await this.userService.getSignReqByUserId(parseInt(payload.aud)).catch((err) => {
+            console.log(err);
+            response.status(HttpStatus.NOT_FOUND).json({
+                message: 'User not found'
+            });
+            return;
+        });
+
+        response.status(HttpStatus.OK).json(data);
+    }
+
     // Passkey login
     @Post('request/passkey/enable')
     async requestPasskeyEnable(@Body() data: { rPasskey: boolean }, @Req() request: Request, @Res({ passthrough: true }) response: Response) {

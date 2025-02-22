@@ -74,7 +74,7 @@ export function SignReqHistoryDialog({ open, closeDialog }: SignReqHistoryDialog
                                         <span className="font-semibold">Content Type:</span> <span>{signReq.content_type}</span>
                                         <span className="font-semibold">Request Status:</span> <span>{signReq.request_status}</span>
                                     </li>
-                                )) : null
+                                )) : <li>No sign request data</li>
                             }
                         </ul>
                         <div className="flex justify-between items-center mt-4">
