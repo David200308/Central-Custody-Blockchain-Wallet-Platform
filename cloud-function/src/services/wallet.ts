@@ -93,7 +93,7 @@ export const createWalletAndGetAddress = onCall(
 );
 
 interface SignRequestData {
-    uid: string;
+    uid: number;
     message: string | {
         value: number;
         to: string;
@@ -122,7 +122,9 @@ export const requestSignature = onCall(
                 throw new Error('Unauthorized request');
             }
 
-            const { uid, message } = request.data;
+            const message = request.data.message;
+            const uid = request.data.uid.toString();
+
             if (!uid || typeof uid !== 'string') {
                 throw new Error('Invalid or missing UID');
             }

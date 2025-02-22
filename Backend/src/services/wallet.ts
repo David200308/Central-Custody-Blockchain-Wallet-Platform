@@ -91,7 +91,7 @@ export class WalletServices {
         }
     }
 
-    async signTransaction(userId: number, transaction: Object): Promise<string> {
+    async signTransaction(userId: number, transaction: Object, token: string): Promise<string> {
         return "test_signature_transaction";
     }
 

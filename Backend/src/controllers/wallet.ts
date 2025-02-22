@@ -154,12 +154,7 @@ export class WalletController {
             switch (mode) {
                 case 'message':
                     if ('message' in bodyData) {
-                        const message = {
-                            "operation": "sign_message",
-                            "message_payload": bodyData.message
-                        }
-                        
-                        const signature = await this.walletService.signMessage(data.id, message, token);
+                        const signature = await this.walletService.signMessage(data.id, bodyData.message, token);
                         response.status(HttpStatus.OK).json({
                             success: true,
                             signature,
@@ -184,12 +179,7 @@ export class WalletController {
                         'maxPriorityFeePerGas' in bodyData &&
                         isPolygonAddress(bodyData.to)
                     ) {
-                        const transaction = {
-                            "operation": "sign_transaction",
-                            "transaction_payload": bodyData
-                        }
-
-                        const txSignature = await this.walletService.signTransaction(data.id, transaction);
+                        const txSignature = await this.walletService.signTransaction(data.id, bodyData, token);
                         response.status(HttpStatus.OK).json({
                             success: true,
                             signature: txSignature,
