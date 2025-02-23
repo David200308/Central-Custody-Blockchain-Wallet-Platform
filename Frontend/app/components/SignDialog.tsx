@@ -234,6 +234,11 @@ export function SignDialog({ open, closeDialog, walletAddress }: SignDialogProps
                   Copy
                 </button>
               </div>
+              <div className="mt-2">
+                <a href={`https://etherscan.io/verifiedSignatures`} target="_blank" rel="noreferrer" className="text-sm text-black hover:underline">
+                  Verify Signature on Etherscan
+                </a>
+              </div>
             </div>
           )}
 
